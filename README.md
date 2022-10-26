@@ -246,6 +246,8 @@ void main(void)
 
 ### Step 3 - Sensor data
 Now we want to actually fetch some data from the real world. We will be using the MPU 6050 from InvenSense, which is a 6 axis accellerometer and gyroscope. You can read about it in the [datasheet from InvenSense](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf).
+</br>
+There are two main approaches 
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
