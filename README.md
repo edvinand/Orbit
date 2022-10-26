@@ -246,7 +246,9 @@ void main(void)
 
 ### Step 3 - Sensor data
 Now we want to actually fetch some data from the real world. We will be using the MPU 6050 from InvenSense, which is a 6 axis accellerometer and gyroscope. You can read about it in the [datasheet from InvenSense](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf).
+
 </br>
+
 There are two main approaches 
 
 ### Step 4 - Motor control
