@@ -269,8 +269,23 @@ Application Tree |
 ------------ |
 <img src="https://github.com/edvinand/Orbit/blob/main/images/application_tree_0.PNG"> |
 
-If all goes well, the project should compile, and we should be able to see our `mpu_sensor.c` in our application tree. Open 
+If all goes well, the project should compile, and we should be able to see our `mpu_sensor.c` in our application tree. Open `mpu_sensor.c` by double clicking it, and start by adding this line to the very top:
+```C
+#include "mpu_sensor.h"
+```
 
+If you right click `mpu_sensor.h` that you just wrote and click "Go to Definition" it should open the `mpu_sensor.h` file in Visual Studio Code. In this header file, add:
+```C
+#include <zephyr.h>
+#include <logging/log.h>
+```
+
+**Challenge:** </br>
+Now try to create a function called `mpu_init()` in your `mpu_sensor.c` file, that you also need to declare in `mpu_sensor.h`. Make the function return 0, and check this return value in `main()` from your `main.c` file. Add whatever is needed in these two files so that you can use this function to print *"Initializing MPU Sensor"* to our log. Remember to include `mpu_sensor.h` from your main.c file. 
+</br>
+*Hint 1: You shouldn't need to include any more files in `mpu_sensor.c`. Only in `mpu_sensor.h`. The files you need to include are also included in `main.c`.*
+</br>
+*Hint 2: Give `mpu_sensor.c` another log module name, so that it is easy to see from what file the log messages are coming from.*
 
 
 ### Step 4 - Motor control
@@ -298,19 +313,14 @@ If all goes well, the project should compile, and we should be able to see our m
 #include "motor_control.h"
 ```
 
-If you right click `"motor_control.h"` that you just wrote and click "Go to Definition" it should open the `motor_control.h` file in Visual Studio Code. In this header file, add:
+Open `motor_control.h` and add:
 ```C
 #include <zephyr.h>
 #include <logging/log.h>
 ```
 
 **Challenge:** </br>
-Now, try to create a function called motor_init() in your motor_control.c file, that you also need to declare in `motor_control.h`. Make the function return 0, and check this return value in `main()`. Add whatever that is needed in these two files so that you can use this function to print *"Initializing Motor Control"* to our log. Remember to include `remote.h` from your main.c file.
-</br>
-*Hint 1: You shouldn't need to include any more files in motor_control.c.*
-</br>
-*Hint 2: Give motor_control.c another log module name, so that it is easy to see from the log what file that printed what lines.*
-</br>
+Just like we did in the `mpu_sensor` files, create a function called `motor_init()` that returns 0 and prints *"Initializing Motor Control"* to your log.
 
 
 **PWM control**
