@@ -265,6 +265,13 @@ target_sources(app PRIVATE
 zephyr_library_include_directories(src/custom_files)
 ```
 
+Application Tree | 
+------------ |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/application_tree_0.PNG"> |
+
+If all goes well, the project should compile, and we should be able to see our `mpu_sensor.c` in our application tree. Open 
+
+
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
@@ -283,11 +290,9 @@ target_sources(app PRIVATE
 zephyr_library_include_directories(src/custom_files)
 ```
 
-Application Tree | 
------------- |
-<img src="https://github.com/edvinand/Orbit/blob/main/images/application_tree.PNG"> |
 
-If all goes well, the project should compile, and we should be able to see our motor_control.c in our application tree. Open `motor_control.c` and start by adding this line to the very top:
+
+If all goes well, the project should compile, and we should be able to see our motor_control.c in our application tree as well. Open `motor_control.c` and start by adding this line to the very top:
 
 ```C
 #include "motor_control.h"
