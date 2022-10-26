@@ -1,2 +1,3 @@
-# Google App Engine generated folder
-appengine-generated/
+# Build and Release Folders
+_build/
+build/
