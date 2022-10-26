@@ -144,7 +144,7 @@ void main(void)
 
     configure_dk_buttons_and_leds();
 
-    err = mpu_init();
+    err = mpu_sensor_init();
     if (err) {
         LOG_ERR("mpu_init() failed. (err %d)", err);
     }

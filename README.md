@@ -281,13 +281,63 @@ If you right click `mpu_sensor.h` that you just wrote and click "Go to Definitio
 ```
 
 **Challenge:** </br>
-Now try to create a function called `mpu_init()` in your `mpu_sensor.c` file, that you also need to declare in `mpu_sensor.h`. Make the function return 0, and check this return value in `main()` from your `main.c` file. Add whatever is needed in these two files so that you can use this function to print *"Initializing MPU Sensor"* to our log. Remember to include `mpu_sensor.h` from your main.c file. 
+Now try to create a function called `mpu_sensor_init()` in your `mpu_sensor.c` file, that you also need to declare in `mpu_sensor.h`. Make the function return 0, and check this return value in `main()` from your `main.c` file. Add whatever is needed in these two files so that you can use this function to print *"Initializing MPU Sensor"* to our log. Remember to include `mpu_sensor.h` from your main.c file. 
 </br>
 *Hint 1: You shouldn't need to include any more files in `mpu_sensor.c`. Only in `mpu_sensor.h`. The files you need to include are also included in `main.c`.*
 </br>
 *Hint 2: Give `mpu_sensor.c` another log module name, so that it is easy to see from what file the log messages are coming from.*
 </br>
 *Hint 3: using the `LOG_MODULE_NAME mpu` does not work. It is probably used by something else in Zephyr. Giving it the name `mpu_sensor` should work.*
+
+</br>
+</br>
+Congratulations. You have successfully created your first function in a different file. Now, let us start reading some sensor data. As I mentioned, the MPU6050 sensor uses I2C for communication. The first thing we want to do is to add I2C to our project. To do this, add the following snippet to your prj.conf file:
+```C
+# I2C
+CONFIG_NRFX_TWIM0=y
+```
+
+Note that TWI (Two Wire Interface) is another name for I2C. The reason for the two names has to do with trademarks and copyrights. Other than the name, they are identical.
+TWIM is short for Two Wire Interface Master, which is what we want to use. Our sensor will be a Two Wire Interface Slave (TWIS), or an I2C slave. 
+</br>
+Unfortunately, adding this config alone is not enough. It tells the nrfx drivers what instance of I2C we want to use. We also need to tell our compiler to actually enable the I2C0 peripheral. The way we do this is by creating a file in our project folder (`remote_controller`). Call it `nrf52840dk_nrf52840.overlay`. It needs to have that exact name, because when a .overlay file with the board name that we are using, it will take that file, and overwrite the default settings that you are found in the board file. 
+</br>
+In your `nrf52840dk_nrf52840.overlay` file, add the following:
+```C
+&i2c0 {
+    status = "okay";
+    compatible = "nordic,nrf-twim";
+    clock-frequency = < I2C_BITRATE_STANDARD >;
+};
+```
+
+Then, inside your `mpu_sensor_init()`, we want to initialize our I2C/TWIM. Add the following to the start of your `mpu_sensor_init()` function:
+
+```C
+    int err = 0;
+
+    LOG_INF("Initializing MPU Sensor");
+
+    const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
+    const nrfx_twim_config_t twim_config    = NRFX_TWIM_DEFAULT_CONFIG(4,3);
+
+    err = nrfx_twim_init(&m_twim_instance,
+                          &twim_config,
+                          my_twim_handler,
+                          NULL);
+                          
+    if (err != NRFX_SUCCESS) {
+        LOG_ERR("twim_init failed. (err %x)", err);
+    }
+    else {
+        err = 0;
+    }
+```
+
+Please note that NRFX_SUCCESS is not equal to 0, which is why we set err back to 0 after checking whether it returned NRFX_SUCCESS.
+</br>
+
+
 
 
 ### Step 4 - Motor control

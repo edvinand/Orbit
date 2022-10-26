@@ -3,4 +3,4 @@
 
 
 
-int mpu_init(void);
+int mpu_sensor_init(void);
