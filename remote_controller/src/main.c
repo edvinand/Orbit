@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <logging/log.h>
 #include <dk_buttons_and_leds.h>
+#include "mpu_sensor.h"
 #include "motor_control.h"
 #include "remote.h"
 
@@ -142,6 +143,12 @@ void main(void)
 	LOG_INF("Hello World! %s", CONFIG_BOARD);
 
     configure_dk_buttons_and_leds();
+
+    err = mpu_init();
+    if (err) {
+        LOG_ERR("mpu_init() failed. (err %d)", err);
+    }
+
     err = motor_init();
     if (err) {
         LOG_ERR("motor_init() failed. (err %d)", err);

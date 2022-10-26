@@ -286,6 +286,8 @@ Now try to create a function called `mpu_init()` in your `mpu_sensor.c` file, th
 *Hint 1: You shouldn't need to include any more files in `mpu_sensor.c`. Only in `mpu_sensor.h`. The files you need to include are also included in `main.c`.*
 </br>
 *Hint 2: Give `mpu_sensor.c` another log module name, so that it is easy to see from what file the log messages are coming from.*
+</br>
+*Hint 3: using the `LOG_MODULE_NAME mpu` does not work. It is probably used by something else in Zephyr. Giving it the name `mpu_sensor` should work.*
 
 
 ### Step 4 - Motor control
