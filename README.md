@@ -249,17 +249,33 @@ Now we want to actually fetch some data from the real world. We will be using th
 
 </br>
 
-There are two main approaches to adapt the MPU into our application. Since NCS, which is built on top of Zephyr is an RTOS, it is possible to use the built in drivers for this particular sensor just by enabling some configurations in our prj.conf file. You can look into this later if you have time, but for the purpose of learning, we will do this the "old fashion way".
+There are two main approaches to adapt the MPU into our application. Since NCS, which is built on top of Zephyr is an RTOS, it is possible to use the built in drivers for this particular sensor just by enabling some configurations in our prj.conf file. You can look into this later if you have the time, but for the purpose of learning, we will do this the "old fashion way".
 The MPU is using something called I2C (pronounced "I square C") to communicate with the nRF. This is a serial communication protocol where we can have one I2C master communicating with several I2C slaves only by connecting two wires, one for the clock and one for the data. In our case we will only use one SPI slave, but if you want to add more I2C devices at a later time, you can do so without using any additional GPIO pins.
 
-### Step 4 - Motor control
-Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
-Basically, we want to output a PWM signal, and the duty cycle of the PWM signal determines what angle/position the rotor will maintain. In our case, the motor wants a duty cycle between 1 and 2 ms, and a PWM period of 20ms. 
-Because we want to keep main.c as clutter free as possible, we will try to do most of the PWM configurations and handling in another file, and implement some simple functions that we can call from main.c. Therefore we will start by adding a few custom files. Create a folder named `custom_files` inside your application folder: *remote_controller\src\custom_files*. You can either do this from Visual Studio Code or from your operating system. Inside this folder create two new files: `motor_control.h` and `motor_control.c`. To include these custom files to your project, open CMakeLists.txt, and add the following snippet at the end:
+</br>
+
+Let us start by adding a couple of new files to our project to keep things clean. Create a folder called `custom_files` inside your application folder: *remote_controller\src\custom_files*. You can either do this from Visual Studio Code, or you can do it from your operating system (Windows File Explorer). Inside that folder, create two new files: `mpu_sensor.h` and `mpu_sensor.c`. To include these custom files to your project, open CMakeLists.txt, and add the following snippet at the end:
 ```C
 # Custom files and folders
 
 target_sources(app PRIVATE
+    src/custom_files/mpu_sensor.c
+)
+
+zephyr_library_include_directories(src/custom_files)
+```
+
+
+### Step 4 - Motor control
+Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
+Basically, we want to output a PWM signal, and the duty cycle of the PWM signal determines what angle/position the rotor will maintain. In our case, the motor wants a duty cycle between 1 and 2 ms, and a PWM period of 20ms. 
+Because we still want to keep main.c as clutter free as possible, we will try to do most of the PWM configurations and handling in another file, and implement some simple functions that we can call from main.c. Therefore we will add a few more custom files. Inside your `custom_files` folder, create two new files: `motor_control.h` and `motor_control.c`. To include these to your project, open CMakeLists.txt, and add the following snippet at the end:
+**Note the `;` after mpu_sensor.c**
+```C
+# Custom files and folders
+
+target_sources(app PRIVATE
+    src/custom_files/mpu_sensor.c;
     src/custom_files/motor_control.c
 )
 
