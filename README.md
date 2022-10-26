@@ -250,6 +250,7 @@ Now we want to actually fetch some data from the real world. We will be using th
 </br>
 
 There are two main approaches to adapt the MPU into our application. Since NCS, which is built on top of Zephyr is an RTOS, it is possible to use the built in drivers for this particular sensor just by enabling some configurations in our prj.conf file. You can look into this later if you have time, but for the purpose of learning, we will do this the "old fashion way".
+The MPU is using something called I2C (pronounced "I square C") to communicate with the nRF. This is a serial communication protocol where we can have one I2C master communicating with several I2C slaves only by connecting two wires, one for the clock and one for the data. In our case we will only use one SPI slave, but if you want to add more I2C devices at a later time, you can do so without using any additional GPIO pins.
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
