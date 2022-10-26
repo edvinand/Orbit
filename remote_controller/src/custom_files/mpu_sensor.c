@@ -30,16 +30,10 @@ int mpu_sensor_init(void)
                           
     if (err != NRFX_SUCCESS) {
         LOG_ERR("twim_init failed. (err %x)", err);
-    }
-    else {
-        err = 0;
+        return err;
     }
 
+    nrfx_twim_enable(&m_twim_instance);
 
- 
-
-
-
-
-    return err;
+    return 0;
 }

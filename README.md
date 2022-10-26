@@ -314,6 +314,8 @@ In your `nrf52840dk_nrf52840.overlay` file, add the following:
 Then, inside your `mpu_sensor_init()`, we want to initialize our I2C/TWIM. Add the following to the start of your `mpu_sensor_init()` function:
 
 ```C
+int mpu_sensor_init(void)
+{
     int err = 0;
 
     LOG_INF("Initializing MPU Sensor");
@@ -328,15 +330,19 @@ Then, inside your `mpu_sensor_init()`, we want to initialize our I2C/TWIM. Add t
                           
     if (err != NRFX_SUCCESS) {
         LOG_ERR("twim_init failed. (err %x)", err);
+        return err;
     }
-    else {
-        err = 0;
-    }
+
+    nrfx_twim_enable(&m_twim_instance);
+
+    return 0;
+}
 ```
 
 Please note that NRFX_SUCCESS is not equal to 0, which is why we set err back to 0 after checking whether it returned NRFX_SUCCESS.
 </br>
-
+</br>
+Now we have initialized and enabled our I2C, and we are ready to start communicating with our MPU. But before we do that, we need to know what data to send to our MPU, and how to interpret the replies. I2C slaves 
 
 
 
