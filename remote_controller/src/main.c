@@ -47,7 +47,6 @@ void on_data_received(struct bt_conn *conn, const uint8_t *const data, uint16_t 
     temp_str[len] = 0x00;
 
     LOG_INF("Received data on conn %p. Len: %d", (void *)conn, len);
-    //LOG_INF("Data: %s", log_strdup(temp_str));
     LOG_INF("Data: %s", temp_str);
 
     if (data[0] == 0x00) {
