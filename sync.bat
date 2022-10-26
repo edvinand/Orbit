@@ -1,6 +1,6 @@
 :: Sync everything
 
-git add application/
+git add remote_controller/
 git add images/
 git add slides/
 git add temp_files/

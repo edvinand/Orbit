@@ -1,4 +1,4 @@
-# OmegaV_BLE_Course
+# Orbit Course
 
 # Bluetooth_Low_Energy_Introduction
 
@@ -35,7 +35,7 @@ The aim of this tutorial is to simply create one service with two characteristic
 If you haven't done it already, start by setting up nRF Connect for Visual Studio code by setting the environment parameters. Under the nRF Connect tab in Visual Studio Code (VSC) click "Open welcome page" and click "Quick Setup". 
 Visual Studio Code settings | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/welcome_page.PNG" width="1000"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/welcome_page.PNG" width="1000"> |
 
 These are my settings, but the path may vary in your environment.
 </br>
@@ -45,7 +45,7 @@ Start by selecting *Create a new application from sample* in the *nRF Connect* -
 
 Setup Application from Sample | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/application_from_sample.PNG"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/application_from_sample.PNG"> |
 
 </br>
 
@@ -64,7 +64,7 @@ If everything goes well, you should have flashed the *hello_world* sample to you
 
 Connect to board's UART | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/connect_uart.PNG"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/connect_uart.PNG"> |
 
 </br>
 
@@ -260,7 +260,7 @@ zephyr_library_include_directories(src/custom_files)
 
 Application Tree | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/application_tree.PNG"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/application_tree.PNG"> |
 
 If all goes well, the project should compile, and we should be able to see our motor_control.c in our application tree. Open `motor_control.c` and start by adding this line to the very top:
 
@@ -393,9 +393,9 @@ Use what you now know to make two of the buttons in the button handler from main
 
 <br>
 
-[main.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot0/main.c)</br>
-[motor_control.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
-[motor_control.h](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot1/custom_files/motor_control.h)</br>
+[main.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot0/main.c)</br>
+[motor_control.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
+[motor_control.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.h)</br>
 
 ### Step 4 - Adding Bluetooth
 It is finally time to add bluetooth to our project. A hint was given in the project name, but in case you missed it, we will write an application that mimics some sort of bluetooth remote, where we will be able to send button presses to a connected Bluetooth Low Energy Central. We will also add the oppurtynity to write back to the remote control. That may not be a typical feature for a remote control, but for the purpose of learning how to communicate in both directions we will add this. The connected central can either be your phone, a computer, or another nRF52. For this guide we will use a separate DK and nRF Connect for Desktop -> Bluetooth, but if you only have one DK, you can use [nRF Connect for iOS or Android.](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile)
@@ -468,7 +468,7 @@ After this (rebuild required), it is time to see what bt_enable does. In nRF Con
 
 Visual Studio Code Navigation | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/VSC_hint.png"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/VSC_hint.png"> |
 
 </br>
 
@@ -562,13 +562,13 @@ Note that all the screenshots are using nRF Connect for iOS. If you are using nR
 
 Scan uisng nRF Connect for Mobile | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/scan_advertisements_mobile.PNG" width="300"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/scan_advertisements_mobile.PNG" width="300"> |
 
 If you select this device, you should be able to see some information from the advertisements. The name should appear as we set it in our prj.conf, and the service should match the service UUID should be visible, and match the service UUID that we defined in remote.h.
 
 Advertisement description | Listed UUIDs |
 ------------ | ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/advertisement_description_mobile.PNG" width="300"> | <img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/UUID_list_mobile.PNG" width="300"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/advertisement_description_mobile.PNG" width="300"> | <img src="https://github.com/edvinand/Orbit/blob/main/images/UUID_list_mobile.PNG" width="300"> |
 
 
 </br>
@@ -630,9 +630,9 @@ If you followed the guide this far, your files should look something like this. 
 
 </br>
 
-[main.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot1/main.c)</br>
-[remote.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot1/custom_files/remote.c)</br>
-[remote.h](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot1/custom_files/remote.h)</br>
+[main.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/main.c)</br>
+[remote.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/remote.c)</br>
+[remote.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/remote.h)</br>
 
 
 ### Step 5 - Adding our First Bluetooth Service
@@ -648,7 +648,7 @@ BT_GATT_PRIMARY_SERVICE(BT_UUID_REMOTE_SERVICE),
 And voila! We have our first Bluetooth Low Energy service. Try to connect to it using nRF Connect, and see that you can see the service.
 Our first service | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/custom_service_mobile.jpg" width="300"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/custom_service_mobile.jpg" width="300"> |
 
 However, a service without any characteristics isn't very impressive. Let us add a characteristic that we can read from our Central. </br>
 We start by defining a new UUID for our characteristic. Basically, you can copy your previous UUID define and increment the two bytes that you set to 0001 to 0002:
@@ -720,11 +720,11 @@ static ssize_t read_button_characteristic_cb(struct bt_conn *conn, const struct 
 
 *Hint: If you are stuck, I uploaded another snapshot of the project here:*
 
-[main.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot2/main.c), 
+[main.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot2/main.c), 
 
-[remote.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot2/custom_files/remote.c), 
+[remote.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot2/custom_files/remote.c), 
 
-[remote.h](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot2/custom_files/remote.h).
+[remote.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot2/custom_files/remote.h).
 
 </br>
 </br>
@@ -883,9 +883,9 @@ Now try to call this function from the button handler, check the return value an
 </br>
 </br>
 *In case you got stuck anywhere since the last snapshot, I'll upload a 3rd snapshot here:</br>
-[main.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot3/main.c)</br>
-[remote.c](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot3/custom_files/remote.c)</br>
-[remote.h](https://github.com/edvinand/OmegaV_BLE_Course/blob/main/temp_files/snapshot3/custom_files/remote.h)*
+[main.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot3/main.c)</br>
+[remote.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot3/custom_files/remote.c)</br>
+[remote.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot3/custom_files/remote.h)*
 
 ### Step 7 - Writing Bck to our Peripheral
 So now we can send button presses from our remote to our phone. Pretty cool. But since we have a wireless device connected to our phone, and this device has a motor connected to it, it would be nice to be able to control the motor from the phone, right? For this we could use the same characteristic that we already have to send communications both ways, but let us create a new characteristic for this purpose.
@@ -987,7 +987,7 @@ Try to write to your new characteristic. Note that when you press the write butt
 
 Writing to a Characteristic | 
 ------------ |
-<img src="https://github.com/edvinand/OmegaV_BLE_Course/blob/main/images/write_to_characteristic.jpg" width="300"> |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/write_to_characteristic.jpg" width="300"> |
 
 <br>
 
@@ -999,4 +999,4 @@ But we said that we wanted to control our motors using these messages. Try to ch
 *Hint: Perhaps just check whether the first byte is 0x00 or 0x01, and set the motor to one of two predefined angles.*
 
 
-You can find the final version of the files in the NCS project [here](https://github.com/edvinand/OmegaV_BLE_Course/tree/main/remote_controller/src).
+You can find the final version of the files in the NCS project [here](https://github.com/edvinand/Orbit/tree/main/remote_controller/src).
