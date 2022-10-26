@@ -25,7 +25,7 @@ This tutorial will show you how to create a custom service with two custom value
 </br>
 
 Although these tutorials were written a while ago, when the nRF5 SDK was still the main SDK for nRF devices, the theory is the same, but in this guide we will be using the nRF Connect SDK, and the Softdevice Controller instead of the nRF5 SDK and the Softdevice.</br>
-If you are looking for the nRF5 SDK version of this guide, please see [this repository](https://github.com/edvinand/custom_ble_service_example).
+#If you are looking for the nRF5 SDK version of this guide, please see [this repository](https://github.com/edvinand/custom_ble_service_example).
 </br>
 The aim of this tutorial is to simply create one service with two characteristics without too much theory in between the steps. You don't need to download any .c or .h files, as we will start with the hello_world sample as a template.
 
@@ -244,7 +244,10 @@ void main(void)
 }
 ```
 
-### Step 3 - Motor control
+### Step 3 - Sensor data
+Now we want to actually fetch some data from the real world. 
+
+### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
 Basically, we want to output a PWM signal, and the duty cycle of the PWM signal determines what angle/position the rotor will maintain. In our case, the motor wants a duty cycle between 1 and 2 ms, and a PWM period of 20ms. 
 Because we want to keep main.c as clutter free as possible, we will try to do most of the PWM configurations and handling in another file, and implement some simple functions that we can call from main.c. Therefore we will start by adding a few custom files. Create a folder named `custom_files` inside your application folder: *remote_controller\src\custom_files*. You can either do this from Visual Studio Code or from your operating system. Inside this folder create two new files: `motor_control.h` and `motor_control.c`. To include these custom files to your project, open CMakeLists.txt, and add the following snippet at the end:
@@ -317,7 +320,7 @@ If you look at the backside of the DK, you can see that some of the pins are use
 
 ```C
 // Near the top of motor_control.c:
-#define SERVO_PIN                           3
+#define SERVO_PIN                           29
 #define PWM_PERIOD                          20000
 static nrfx_pwm_t pwm = NRFX_PWM_INSTANCE(1);
 
@@ -397,7 +400,7 @@ Use what you now know to make two of the buttons in the button handler from main
 [motor_control.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
 [motor_control.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.h)</br>
 
-### Step 4 - Adding Bluetooth
+### Step 5 - Adding Bluetooth
 It is finally time to add bluetooth to our project. A hint was given in the project name, but in case you missed it, we will write an application that mimics some sort of bluetooth remote, where we will be able to send button presses to a connected Bluetooth Low Energy Central. We will also add the oppurtynity to write back to the remote control. That may not be a typical feature for a remote control, but for the purpose of learning how to communicate in both directions we will add this. The connected central can either be your phone, a computer, or another nRF52. For this guide we will use a separate DK and nRF Connect for Desktop -> Bluetooth, but if you only have one DK, you can use [nRF Connect for iOS or Android.](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile)
 </br>
 </br>
@@ -635,7 +638,7 @@ If you followed the guide this far, your files should look something like this. 
 [remote.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/remote.h)</br>
 
 
-### Step 5 - Adding our First Bluetooth Service
+### Step 6 - Adding our First Bluetooth Service
 Let us add the service that we claim that we have when we advertise. We will use the macro BT_GATT_SERVICE_DEFINE to add our service. It is quite simple at the same time as it is quite complex. When we use this macro to create and add our service, the rest is done "under the hood" of NCS/Zephyr. By just adding this snippet to remote.c
 
 ```C
@@ -731,7 +734,7 @@ static ssize_t read_button_characteristic_cb(struct bt_conn *conn, const struct 
 Now, try to connect to your device using nRF Connect, and see that you have a characteristic that you can read using the read button in nRF Connect (the button with the down pointing arrow). Whenever you push a button on your DK and read it again, you should see that the is updated.
 
 
-### Step 6 - Characteristic Notifications
+### Step 7 - Characteristic Notifications
 We do not want to keep having to ask our peripheral about the last pressed button all the time. It requires a lot of read requests and read response packets on the air, which is not very power efficient. Therefore we have something called "notifications", which allows the peripheral to push changes to the central whenever they occur. This is set using something called Client Characteristic Configuration Descriptor (CCCD or CCC). The first thing we need to do is to add this descriptor to our characteristic. Do this by adding the last line to your Service macro in remote.c:
 
 ```C
@@ -887,7 +890,7 @@ Now try to call this function from the button handler, check the return value an
 [remote.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot3/custom_files/remote.c)</br>
 [remote.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot3/custom_files/remote.h)*
 
-### Step 7 - Writing Bck to our Peripheral
+### Step 8 - Writing Bck to our Peripheral
 So now we can send button presses from our remote to our phone. Pretty cool. But since we have a wireless device connected to our phone, and this device has a motor connected to it, it would be nice to be able to control the motor from the phone, right? For this we could use the same characteristic that we already have to send communications both ways, but let us create a new characteristic for this purpose.
 
 **Todo:**</br>
