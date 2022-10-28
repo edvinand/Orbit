@@ -89,7 +89,7 @@ void on_disconnected(struct bt_conn *conn, uint8_t reason)
 
 void button_handler(uint32_t button_state, uint32_t has_changed)
 {
-    int err;
+    // int err;
 	int button_pressed = 0;
 	if (has_changed & button_state)
 	{
@@ -113,11 +113,11 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 				break;
 		}
         LOG_INF("Button %d pressed.", button_pressed);
-        set_button_press(button_pressed); 
-        err = send_button_notification(current_conn, button_pressed);
-        if (err) {
-            LOG_ERR("Couldn't send notification. Err %d", err);
-        }
+        // set_button_press(button_pressed); 
+        // err = send_button_notification(current_conn, button_pressed);
+        // if (err) {
+        //     LOG_ERR("Couldn't send notification. Err %d", err);
+        // }
     }
 }
 
@@ -141,12 +141,14 @@ void main(void)
     int err;
     int blink_status = 0;
 	LOG_INF("Hello World! %s", CONFIG_BOARD);
+    accel_values_t accel_values;
+    //gyro_values_t gyro_values;
 
     configure_dk_buttons_and_leds();
 
     err = mpu_sensor_init();
     if (err) {
-        LOG_ERR("mpu_init() failed. (err %d)", err);
+        LOG_ERR("mpu_init() failed. (err %08x)", err);
     }
 
     err = motor_init();
@@ -154,15 +156,18 @@ void main(void)
         LOG_ERR("motor_init() failed. (err %d)", err);
     }
 
-    err = bluetooth_init(&bluetooth_callbacks, &remote_callbacks);
-    if (err) {
-        LOG_ERR("Bluetooth_init() failed. (err %d)", err);
-    }
+    // err = bluetooth_init(&bluetooth_callbacks, &remote_callbacks);
+    // if (err) {
+    //     LOG_ERR("Bluetooth_init() failed. (err %d)", err);
+    // }
 
     LOG_INF("Running");
 
     for (;;) {
         dk_set_led(RUN_STATUS_LED, (blink_status++)%2);
+        if (read_accel_values(&accel_values) == 0) {
+            LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
+        }
         k_sleep(K_MSEC(1000));
     }
 }

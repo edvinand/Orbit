@@ -1,0 +1,23 @@
+empty_file.o: \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/misc/empty_file.c \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/boards/arm/nrf52840dk_nrf52840/nrf52840dk_nrf52840.dts \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/arm/nordic/nrf52840_qiaa.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/common/mem.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/arm/nordic/nrf52840.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/arm/armv7-m.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/common/skeleton.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/arm/nordic/nrf_common.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/adc/adc.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/adc/nrf-adc.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/dt-util.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/sys/util_macro.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/sys/util_internal.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/sys/util_loops.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/gpio/gpio.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/i2c/i2c.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/pinctrl/nrf-pinctrl.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/common/freq.h \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/dts/arm/nordic/override.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/v2.1.0/zephyr/boards/arm/nrf52840dk_nrf52840/nrf52840dk_nrf52840-pinctrl.dtsi \
+ C:/Nordic_Semiconductor/SDKs/ncs/my_projects/2.1.0/Orbit/remote_controller/nrf52840dk_nrf52840.overlay

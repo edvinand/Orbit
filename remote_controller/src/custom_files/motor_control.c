@@ -14,6 +14,9 @@ static nrf_pwm_values_individual_t position_1[] = {
 static nrf_pwm_values_individual_t position_2[] = {
     {17500},
 };
+static nrf_pwm_values_individual_t position_3[] = {
+    {18500},
+};
 
 static nrf_pwm_sequence_t position_1_sequence = {
     .values.p_individual    = position_1,
@@ -27,45 +30,16 @@ static nrf_pwm_sequence_t position_2_sequence = {
     .repeats                = 0,
     .end_delay              = 0
 };
-
-
-//void set_gpio_voltage(void) // If your motor is struggling, try calling this function from motor_init().
-//{
-//    uint32_t regout = NRF_UICR->REGOUT0;
-//    uint32_t target_voltage = UICR_REGOUT0_VOUT_3V3;
-//
-//    LOG_INF("Regout: 0x%08x", regout);
-//    if ((regout & UICR_REGOUT0_VOUT_Msk) != target_voltage) {
-//        LOG_INF("regout not set to 3V3. Configuring...");
-//        
-//
-//        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
-//        while (NRF_NVMC->CONFIG != NVMC_CONFIG_WEN_Wen){
-//            // Wait...
-//        }
-//        NRF_UICR->REGOUT0 = (target_voltage | ~UICR_REGOUT0_VOUT_Msk);
-//        while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {
-//            // Wait...
-//        }
-//        while ((NRF_UICR->REGOUT0 & UICR_REGOUT0_VOUT_Msk) != target_voltage) {
-//            // Wait...
-//        }
-//        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
-//        while (NRF_NVMC->CONFIG != NVMC_CONFIG_WEN_Ren){
-//            // Wait...
-//        }
-//        NVIC_SystemReset();
-//    } else {
-//        LOG_INF("Regout0 is set to target voltage.");
-//    }
-//
-//}
+static nrf_pwm_sequence_t position_3_sequence = {
+    .values.p_individual    = position_3,
+    .length                 = NRF_PWM_VALUES_LENGTH(position_3),
+    .repeats                = 0,
+    .end_delay              = 0
+};
 
 int motor_init(void)
 {
     LOG_INF("Initializing Motor Control");
-
-    //set_gpio_voltage();
 
     nrfx_err_t err;
     nrfx_pwm_config_t pwm_config    = NRFX_PWM_DEFAULT_CONFIG(SERVO_PIN, NRFX_PWM_PIN_NOT_USED, NRFX_PWM_PIN_NOT_USED, NRFX_PWM_PIN_NOT_USED);
@@ -91,6 +65,9 @@ void set_motor_angle(uint16_t angle)
     }
     else if (angle == 2) {
         nrfx_pwm_simple_playback(&pwm, &position_2_sequence, 100, NRFX_PWM_FLAG_STOP);
+    }
+    else if (angle == 3) {
+        nrfx_pwm_simple_playback(&pwm, &position_3_sequence, 100, NRFX_PWM_FLAG_STOP);
     }
 
 }
