@@ -608,8 +608,11 @@ In addition, we added some parameters and definitions at the top:
 Now there is only one thing we need to fix before we actually can start reading values from our accellerometer. We need to implement our TWI callback function. This is a function that is called every time a TWI transfer is done (either send or receive). We need to use it because these operations are not instant, and we actually need to use it to make our application wait for the previous transaction before we attempt to use it again, and because we want to make sure that the data was read successfully before we try to read from our TWI buffer.
 
 </br> 
+
 Have a peek at our `wait_for_xfer_done()` function. As you can see we are waiting for a parameter twi_xfer_done to be set to true. This is what we will do in our TWI callback. As you may remember, the callback function has some "input" parameters. `p_context` would be the same as we input as p_contect in `nrfx_twim_init()`, so that is NULL (not very useful). But the `p_event` parameter holds some information about the callback. Look at the declaration of `nrfx_twim_evt_t` in `nrfx_twim.h`. You can see that it has two parameters. `type` and `xfer_desc`. The type, `nrfx_twim_evt_type_t` is also defined in `nrfx_twim.h`, and it is an enum with all the possible values. We want to create a switch case for these event types. NRFX_TWIM_EVT_DONE means that a message was succesfully sent and ACKed, which is just what we are looking for. For the rest of the event types, we will just log something, so that we can detect if any of those occur.
+
 </br>
+
 Add this to your already existing `my_twim_handler()` function:
 
 ```C
