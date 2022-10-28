@@ -605,6 +605,46 @@ In addition, we added some parameters and definitions at the top:
 **twi_tx_buffer:** The actuall buffer (with size MPU_TWI_BUFFER_SIZE) that we use to read registers from the MPU.
 </br>
 
+Now there is only one thing we need to fix before we actually can start reading values from our accellerometer. We need to implement our TWI callback function. This is a function that is called every time a TWI transfer is done (either send or receive). We need to use it because these operations are not instant, and we actually need to use it to make our application wait for the previous transaction before we attempt to use it again, and because we want to make sure that the data was read successfully before we try to read from our TWI buffer.
+
+</br> 
+Have a peek at our `wait_for_xfer_done()` function. As you can see we are waiting for a parameter twi_xfer_done to be set to true. This is what we will do in our TWI callback. As you may remember, the callback function has some "input" parameters. `p_context` would be the same as we input as p_contect in `nrfx_twim_init()`, so that is NULL (not very useful). But the `p_event` parameter holds some information about the callback. Look at the declaration of `nrfx_twim_evt_t` in `nrfx_twim.h`. You can see that it has two parameters. `type` and `xfer_desc`. The type, `nrfx_twim_evt_type_t` is also defined in `nrfx_twim.h`, and it is an enum with all the possible values. We want to create a switch case for these event types. NRFX_TWIM_EVT_DONE means that a message was succesfully sent and ACKed, which is just what we are looking for. For the rest of the event types, we will just log something, so that we can detect if any of those occur.
+</br>
+Add this to your already existing `my_twim_handler()` function:
+
+```C
+void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
+{
+    // LOG_INF("TWIM callback");
+    switch(p_event->type)
+    {
+        case NRFX_TWIM_EVT_DONE:
+            twi_xfer_done = true;   // This is the event we are waiting for.
+            break;
+        case NRFX_TWIM_EVT_ADDRESS_NACK:
+            LOG_ERR("address nack");
+            break;
+        case NRFX_TWIM_EVT_DATA_NACK:
+            LOG_ERR("data nack");
+            break;
+        case NRFX_TWIM_EVT_OVERRUN:
+            LOG_ERR("overrun");
+            break;
+        case NRFX_TWIM_EVT_BUS_ERROR:
+            LOG_ERR("bus error");
+            break;
+        default:
+            LOG_ERR("default (should never happen)");
+            break;
+    }
+    
+}
+```
+
+If we wanted to, we could use the parameter p_event->xfer_desc.type, which is a member of the enum `nrfx_twim_xfer_type_t` also from `nrfx_twim.h` to check whether the callback belongs to a read or a write. But we will not use that in our project. 
+
+
+
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).

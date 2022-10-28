@@ -137,27 +137,7 @@ void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
     switch(p_event->type)
     {
         case NRFX_TWIM_EVT_DONE:
-            switch (p_event->xfer_desc.type)
-            {
-                case NRFX_TWIM_XFER_TX:
-                    twi_xfer_done = true;
-                    break;
-                case NRFX_TWIM_XFER_RX:
-                    twi_xfer_done = true;
-                    break;
-                case NRFX_TWIM_XFER_TXRX:
-                    twi_xfer_done = true;
-                    // Not really used in our application.
-                    break;
-                case NRFX_TWIM_XFER_TXTX:
-                    twi_xfer_done = true;
-                    // Not really used in our application.
-                    break;
-                default:
-                    LOG_INF("default");
-                    // Should never happen
-                    break;
-            }
+            twi_xfer_done = true;   // This is the event we are waiting for.
             break;
         case NRFX_TWIM_EVT_ADDRESS_NACK:
             LOG_ERR("address nack");
@@ -172,6 +152,7 @@ void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
             LOG_ERR("bus error");
             break;
         default:
+            LOG_ERR("default (should never happen)");
             break;
     }
     
