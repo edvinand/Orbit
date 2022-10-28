@@ -4,61 +4,13 @@
 #define LOG_MODULE_NAME mpu_sensor
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
+const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
+
 #define MPU_TWI_BUFFER_SIZE             14
 #define MPU_TWI_TIMEOUT                 10000
 #define MPU_ADDRESS                     0x68
-
-const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
 volatile static bool twi_xfer_done      = false;
-
 uint8_t twi_tx_buffer[MPU_TWI_BUFFER_SIZE];
-
-
-void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
-{
-    // LOG_INF("TWIM callback");
-    switch(p_event->type)
-    {
-        case NRFX_TWIM_EVT_DONE:
-            switch (p_event->xfer_desc.type)
-            {
-                case NRFX_TWIM_XFER_TX:
-                    twi_xfer_done = true;
-                    break;
-                case NRFX_TWIM_XFER_RX:
-                    twi_xfer_done = true;
-                    break;
-                case NRFX_TWIM_XFER_TXRX:
-                    twi_xfer_done = true;
-                    // Not really used in our application.
-                    break;
-                case NRFX_TWIM_XFER_TXTX:
-                    twi_xfer_done = true;
-                    // Not really used in our application.
-                    break;
-                default:
-                    LOG_INF("default");
-                    // Should never happen
-                    break;
-            }
-            break;
-        case NRFX_TWIM_EVT_ADDRESS_NACK:
-            LOG_ERR("address nack");
-            break;
-        case NRFX_TWIM_EVT_DATA_NACK:
-            LOG_ERR("data nack");
-            break;
-        case NRFX_TWIM_EVT_OVERRUN:
-            LOG_ERR("overrun");
-            break;
-        case NRFX_TWIM_EVT_BUS_ERROR:
-            LOG_ERR("bus error");
-            break;
-        default:
-            break;
-    }
-    
-}
 
 int app_mpu_tx(const nrfx_twim_t *  p_instance,
                 uint8_t             address,
@@ -177,6 +129,52 @@ int app_mpu_read_registers(uint8_t reg, uint8_t * p_data, uint8_t length)
     }
 
     return 0;
+}
+
+void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
+{
+    // LOG_INF("TWIM callback");
+    switch(p_event->type)
+    {
+        case NRFX_TWIM_EVT_DONE:
+            switch (p_event->xfer_desc.type)
+            {
+                case NRFX_TWIM_XFER_TX:
+                    twi_xfer_done = true;
+                    break;
+                case NRFX_TWIM_XFER_RX:
+                    twi_xfer_done = true;
+                    break;
+                case NRFX_TWIM_XFER_TXRX:
+                    twi_xfer_done = true;
+                    // Not really used in our application.
+                    break;
+                case NRFX_TWIM_XFER_TXTX:
+                    twi_xfer_done = true;
+                    // Not really used in our application.
+                    break;
+                default:
+                    LOG_INF("default");
+                    // Should never happen
+                    break;
+            }
+            break;
+        case NRFX_TWIM_EVT_ADDRESS_NACK:
+            LOG_ERR("address nack");
+            break;
+        case NRFX_TWIM_EVT_DATA_NACK:
+            LOG_ERR("data nack");
+            break;
+        case NRFX_TWIM_EVT_OVERRUN:
+            LOG_ERR("overrun");
+            break;
+        case NRFX_TWIM_EVT_BUS_ERROR:
+            LOG_ERR("bus error");
+            break;
+        default:
+            break;
+    }
+    
 }
 
 int twi_init(void)

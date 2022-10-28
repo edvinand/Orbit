@@ -441,6 +441,166 @@ Please note that NRFX_SUCCESS is not equal to 0, which is why we set err back to
 Now we have initialized and enabled our I2C, and we are ready to start communicating with our MPU. But before we do that, we need to know what data to send to our MPU, and how to interpret the data coming back. I2C slaves will always wait for a message from the I2C master, and then it will reply according to that message. 
 
 Now is the time to open up the datasheet to our sensor again. [(link)](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
+</br>
+To save some time, you can download this file, which I stole from a colleague, who found it somewhere (not sure of the source). 
+<br>
+[mpu6050_registers.h](https://github.com/edvinand/Orbit/blob/main/remote_controller/src/custom_files/mpu6050_registers.h)
+</br>
+If you cloned this repository, it is found under `remote_controller\src\custom_files\mpu6050_registers.h`, but if not, create a file with that name, and just copy paste the content into your newly created file. Include it from your mpu_senror.h file. 
+What this file contains is all the register names and addresses. We will use this when we communicate with our sensor. TWI drivers may seem a bit scary. Therefore, I will just dump a bunch of functions here that you can paste into your `mpu_sensor.c`, somewhere before `my_twim_handler()`. I will explain them briefly below.
+
+```C
+#define MPU_TWI_BUFFER_SIZE             14
+#define MPU_TWI_TIMEOUT                 10000
+#define MPU_ADDRESS                     0x68
+volatile static bool twi_xfer_done      = false;
+uint8_t twi_tx_buffer[MPU_TWI_BUFFER_SIZE];
+
+int app_mpu_tx(const nrfx_twim_t *  p_instance,
+                uint8_t             address,
+                uint8_t *           p_data,
+                uint8_t             length,
+                bool                no_stop)
+{
+    int err;
+
+    nrfx_twim_xfer_desc_t xfer = NRFX_TWIM_XFER_DESC_TX(address, p_data, length);
+    err = nrfx_twim_xfer(p_instance, &xfer, 0);
+    if (err != NRFX_SUCCESS) {
+        return err;
+    }
+
+    return 0;
+}
+
+int app_mpu_rx(const nrfx_twim_t *   p_instance,
+               uint8_t               address,
+               uint8_t *             p_data,
+               uint8_t               length)
+{
+    int err;
+    nrfx_twim_xfer_desc_t xfer = NRFX_TWIM_XFER_DESC_RX(address, p_data, length);
+
+    err = nrfx_twim_xfer(p_instance, &xfer, 0);
+    if (err != NRFX_SUCCESS) {
+        return err;
+    }
+    return 0;
+}
+
+int wait_for_xfer_done(void)
+{
+    int timeout = MPU_TWI_TIMEOUT;
+    while ((!twi_xfer_done) && --timeout)
+    {
+        // Wait...
+    }
+    if (timeout == 0) {
+        return NRFX_ERROR_TIMEOUT;
+    }
+    return 0;
+}
+
+int app_mpu_write_single_register(uint8_t reg, uint8_t data)
+{
+    int err;
+
+    uint8_t packet[2] = {reg, data};
+
+    twi_xfer_done = false;  // reset for new xfer
+    err = app_mpu_tx(&m_twim_instance, MPU_ADDRESS, packet, 2, false);
+    if (err) {
+        return err;
+    }
+    err = wait_for_xfer_done();
+    if (err == NRFX_ERROR_TIMEOUT) {
+        return err;
+    }
+    
+    return 0;
+}
+
+int app_mpu_write_registers(uint8_t reg, uint8_t * p_data, uint8_t length)
+{
+    int err;
+    
+    twi_tx_buffer[0] = reg;
+    memcpy((twi_tx_buffer + 1), p_data, length);
+
+    nrfx_twim_xfer_desc_t xfer = {0};
+    xfer.address = MPU_ADDRESS;
+    xfer.type = NRFX_TWIM_XFER_TX;
+    xfer.primary_length = length+1;
+    xfer.p_primary_buf = twi_tx_buffer;
+
+    twi_xfer_done = false;  // reset for new xfer
+    err = nrfx_twim_xfer(&m_twim_instance, &xfer,0);
+    if (err != NRFX_SUCCESS) {
+        return err;
+    }
+    err = wait_for_xfer_done();
+    if (err == NRFX_ERROR_TIMEOUT) {
+        return err;
+    }
+
+    return 0;
+    
+}
+
+int app_mpu_read_registers(uint8_t reg, uint8_t * p_data, uint8_t length)
+{
+    int err;
+
+    twi_xfer_done = false;  // reset for new xfer
+    err = app_mpu_tx(&m_twim_instance, MPU_ADDRESS, &reg, 1, false);
+    if (err) {
+        return err;
+    }
+    err = wait_for_xfer_done();
+    if (err == NRFX_ERROR_TIMEOUT) {
+        return err;
+    }
+
+    twi_xfer_done = false;  // reset for new xfer
+    err = app_mpu_rx(&m_twim_instance,MPU_ADDRESS, p_data, length);
+    if (err) {
+        LOG_ERR("app_mpu_rx returned %08x", err);
+        return err;
+    }
+    err = wait_for_xfer_done();
+    if (err == NRFX_ERROR_TIMEOUT) {
+        return err;
+    }
+
+    return 0;
+}
+```
+
+Explanation of functions:
+**app_mpu_tx():** will send `length` bytes of data to the device with the `address`. The data it sends is stored in `p_data`.
+</br>
+**app_mpu_rx():** will read `length` bytes of data from the device with the `address`. The data is stored in `p_data`.
+</br>
+**wait_for_xfer_done():** will be used to wait for the next TWIM callback in our callback handler. We will implement this functionality in the TWI callback next. If it times out, the function will return NRFX_ERROR_TIMEOUT. If successful, it will return 0.
+</br>
+**app_mpu_write_single_register()** will send one byte of payload `data` to the register `reg` given as an input parameter.
+</br>
+**app_mpu_write_registers():** will send `length` bytes to the registers starting at `reg`. The data it sends is stored in `p_data`.
+</br>
+**app_mpu_read_registers():** will read `length` bytes starting from the register `reg`.
+</br>
+In addition, we added some parameters and definitions at the top:
+**MPU_TWI_BUFFER_SIZE:** the maximum number of bytes we can use in a transfer. The size is selected so that it will be possible to read the accellerometer (6 bytes), gyroscope (6 bytes) and temperature (2 bytes) in one transmission.
+</br>
+**MPU_TWI_TIMEOUT:** the number of iterations we will wait for the TWI transfer to complete before we time out.
+</br>
+**MPU_ADDRESS:** This is the TWI address of our sensor. This will be used in all of our transfers. It is hardcoded into our read and write functions.
+</br>
+**twi_xfer_done:** The parameters used to tell `wait_for_xfer_done()` that we received our callback.
+</br>
+**twi_tx_buffer:** The actuall buffer (with size MPU_TWI_BUFFER_SIZE) that we use to read registers from the MPU.
+</br>
+
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
