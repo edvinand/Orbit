@@ -187,8 +187,6 @@ int twi_init(void)
 
     int err = 0;
 
-    LOG_INF("Initializing MPU Sensor");
-
     const nrfx_twim_config_t twim_config = {                          \
         .scl                = 4,                                      \
         .sda                = 3,                                      \
@@ -211,14 +209,10 @@ int twi_init(void)
     return 0;
 }
 
-int app_mpu_init(void)
+int app_mpu_config(app_mpu_config_t * config)
 {
-    int err;
+    int err = 0;
 
-    err = twi_init();
-    if (err) {
-        return err;
-    }
     uint8_t reset_value = 7;
     err = app_mpu_write_single_register(MPU_REG_SIGNAL_PATH_RESET, reset_value);
     if (err) {
@@ -226,12 +220,10 @@ int app_mpu_init(void)
     }
 
     err = app_mpu_write_single_register(MPU_REG_PWR_MGMT_1, 1);
-    return err;
-}
+    if (err) {
+        return err;
+    }
 
-int app_mpu_config(app_mpu_config_t * config)
-{
-    int err = 0;
     uint8_t *data;
     data = (uint8_t*)config;
     
@@ -243,7 +235,9 @@ int mpu_sensor_init(void)
 {
     int err;
 
-    err = app_mpu_init();
+    LOG_INF("Initializing MPU Sensor");
+
+    err = twi_init();
     if (err) {
         return err;
     }

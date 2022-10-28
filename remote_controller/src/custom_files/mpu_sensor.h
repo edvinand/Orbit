@@ -1,6 +1,6 @@
 #include <zephyr.h>
 #include <logging/log.h>
-#include "mpu6050.h"
+#include "mpu6050_registers.h"
 #include "nrfx_twim.h"
 #include <drivers/i2c.h>
 #include <nrf52840.h>

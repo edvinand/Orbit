@@ -299,7 +299,7 @@ CONFIG_NRFX_TWIM0=y
 ```
 
 Note that TWI (Two Wire Interface) is another name for I2C. The reason for the two names has to do with trademarks and copyrights. Other than the name, they are identical.
-TWIM is short for Two Wire Interface Master, which is what we want to use. Our sensor will be a Two Wire Interface Slave (TWIS), or an I2C slave. 
+TWIM is short for "Two Wire Interface Master", which is what we want to use. Our sensor will be a Two Wire Interface Slave (TWIS), or an I2C slave. 
 </br>
 Unfortunately, adding this config alone is not enough. It tells the nrfx drivers what instance of I2C we want to use. We also need to tell our compiler to actually enable the I2C0 peripheral. The way we do this is by creating a file in our project folder (`remote_controller`). Call it `nrf52840dk_nrf52840.overlay`. It needs to have that exact name, because when a .overlay file with the board name that we are using, it will take that file, and overwrite the default settings that you are found in the board file. 
 </br>
@@ -312,33 +312,37 @@ In your `nrf52840dk_nrf52840.overlay` file, add the following:
 };
 ```
 
-Then, inside your `mpu_sensor_init()`, we want to initialize our I2C/TWIM. Add the following to the start of your `mpu_sensor_init()` function:
+Then, inside your `mpu_sensor_init()`, we want to initialize our I2C/TWIM sensor. It requires a few steps. First, we need to start the I2C, and then we need to send some I2C commands to tell our sensor to turn on. Let us start by adding a function called `twi_init()`, and call it inside mpu_sensor_init().
 
 ```C
 int mpu_sensor_init(void)
 {
-    int err = 0;
+    int err;
 
     LOG_INF("Initializing MPU Sensor");
 
-    const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
-    const nrfx_twim_config_t twim_config    = NRFX_TWIM_DEFAULT_CONFIG(4,3);
-
-    err = nrfx_twim_init(&m_twim_instance,
-                          &twim_config,
-                          my_twim_handler,
-                          NULL);
-                          
-    if (err != NRFX_SUCCESS) {
-        LOG_ERR("twim_init failed. (err %x)", err);
-        return err;
+    err = twi_init();
+    if (err) {
+        return err; // I know that this seems unnecessary, since we return err right below. But we will add more in between later.
     }
-
-    nrfx_twim_enable(&m_twim_instance);
-
-    return 0;
-}
+    
+    return err;
 ```
+
+Then, start by implementing your `twi_init()` function like this (write this *above* `mpu_sensor_init()` inside `mpu_sensor.c`. Since this will only be used from inside this file locally, we don't need to declare it in `mpu_sensor.h`.
+
+```C
+int twi_init(void)
+{
+    // Setup peripheral interrupt.
+    IRQ_CONNECT(DT_IRQN(DT_NODELABEL(i2c0)),DT_IRQ(DT_NODELABEL(i2c0), priority), nrfx_isr, nrfx_twim_0_irq_handler,0);
+    irq_enable(DT_IRQN(DT_NODELABEL(i2c0)));
+
+    int err = 0;
+    
+} 
+```
+What we are doing here is that we are telling the 
 
 Please note that NRFX_SUCCESS is not equal to 0, which is why we set err back to 0 after checking whether it returned NRFX_SUCCESS.
 </br>
