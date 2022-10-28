@@ -188,7 +188,7 @@ int twi_init(void)
     return 0;
 }
 
-int app_mpu_config(app_mpu_config_t * config)
+int app_mpu_config(void)
 {
     int err = 0;
 
@@ -203,8 +203,19 @@ int app_mpu_config(app_mpu_config_t * config)
         return err;
     }
 
+    app_mpu_config_t mpu_config = {
+        .smplrt_div                     = 19,             \
+        .sync_dlpf_config.dlpf_cfg      = 1,              \
+        .sync_dlpf_config.ext_sync_set  = 0,              \
+        .gyro_config.fs_sel             = GFS_2000DPS,    \
+        .accel_config.afs_sel           = AFS_2G,         \
+        .accel_config.za_st             = 0,              \
+        .accel_config.ya_st             = 0,              \
+        .accel_config.xa_st             = 0,              \
+    };
+
     uint8_t *data;
-    data = (uint8_t*)config;
+    data = (uint8_t*)&mpu_config; // Casting to a normal uint8_t so that app_mpu_write_register will accept it as an input parameter.
     
     err = app_mpu_write_registers(MPU_REG_SMPLRT_DIV, data, 4);
     return err;
@@ -221,18 +232,7 @@ int mpu_sensor_init(void)
         return err;
     }
 
-    app_mpu_config_t mpu_config = {
-        .smplrt_div                     = 19,             \
-        .sync_dlpf_gonfig.dlpf_cfg      = 1,              \
-        .sync_dlpf_gonfig.ext_sync_set  = 0,              \
-        .gyro_config.fs_sel             = GFS_2000DPS,    \
-        .accel_config.afs_sel           = AFS_2G,         \
-        .accel_config.za_st             = 0,              \
-        .accel_config.ya_st             = 0,              \
-        .accel_config.xa_st             = 0,              \
-    };
-
-    err = app_mpu_config(&mpu_config);
+    err = app_mpu_config();
 
     return err;
 }

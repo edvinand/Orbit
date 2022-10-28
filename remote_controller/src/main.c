@@ -168,6 +168,6 @@ void main(void)
         if (read_accel_values(&accel_values) == 0) {
             LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
         }
-        k_sleep(K_MSEC(1000));
+        k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
     }
 }

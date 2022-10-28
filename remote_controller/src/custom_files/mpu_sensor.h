@@ -7,22 +7,6 @@
 #include <zephyr/irq.h>
 
 
-/* Enum defining Accelerometer's Full Scale range posibillities in Gs. */
-enum accel_range {
-  AFS_2G = 0,       // 2 G
-  AFS_4G,           // 4 G
-  AFS_8G,           // 8 G
-  AFS_16G           // 16 G
-};
-
-/* Enum defining Gyroscope's Full Scale range posibillities in Degrees Pr Second. */
-enum gyro_range {
-  GFS_250DPS = 0,   // 250 deg/s
-  GFS_500DPS,       // 500 deg/s
-  GFS_1000DPS,      // 1000 deg/s
-  GFS_2000DPS       // 2000 deg/s
-};
-
 /* Structure to hold acceleromter values.
  * All values are unsigned 16 bit integers
 */
@@ -43,6 +27,24 @@ typedef struct
     int16_t y;
     int16_t z;
 }gyro_values_t;
+
+/* Enum defining Accelerometer's Full Scale range posibillities in Gs. */
+enum accel_range {
+  AFS_2G = 0,       // 2 G
+  AFS_4G,           // 4 G
+  AFS_8G,           // 8 G
+  AFS_16G           // 16 G
+};
+
+/* Enum defining Gyroscope's Full Scale range posibillities in Degrees Pr Second. */
+enum gyro_range {
+  GFS_250DPS = 0,   // 250 deg/s
+  GFS_500DPS,       // 500 deg/s
+  GFS_1000DPS,      // 1000 deg/s
+  GFS_2000DPS       // 2000 deg/s
+};
+
+
 
 /* MPU driver digital low pass fileter and external Frame Synchronization (FSYNC) pin sampling configuration structure */
 typedef struct
@@ -75,7 +77,7 @@ typedef struct
 typedef struct
 {
     uint8_t             smplrt_div;         // Divider from the gyroscope output rate used to generate the Sample Rate for the MPU-9150. Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
-    sync_dlpf_config_t  sync_dlpf_gonfig;   // Digital low pass fileter and external Frame Synchronization (FSYNC) configuration structure
+    sync_dlpf_config_t  sync_dlpf_config;   // Digital low pass fileter and external Frame Synchronization (FSYNC) configuration structure
     gyro_config_t       gyro_config;        // Gyro configuration structure
     accel_config_t      accel_config;       // Accelerometer configuration structure
 }app_mpu_config_t;

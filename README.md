@@ -364,8 +364,8 @@ const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
 Then we need to create our config parameter. We can do it like this (inside our `twi_init()` function) :
 ```C
     const nrfx_twim_config_t twim_config = {                          \
-        .scl                = 4,                                      \
-        .sda                = 3,                                      \
+        .scl                = 4,                                      \ // These particular gpios are used because they are close to both VDD and GND.
+        .sda                = 3,                                      \ // These particular gpios are used because they are close to both VDD and GND.
         .frequency          = NRF_TWIM_FREQ_400K,                     \
         .interrupt_priority = NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY,  \
         .hold_bus_uninit    = false,                                  \
@@ -646,6 +646,200 @@ void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
 
 If we wanted to, we could use the parameter p_event->xfer_desc.type, which is a member of the enum `nrfx_twim_xfer_type_t` also from `nrfx_twim.h` to check whether the callback belongs to a read or a write. But we will not use that in our project. 
 
+Now everything is set up for us to both read and send data over TWI to our sensor. The first thing we need to do is to configure our MPU6050 to operate in the mode that we want to. 
+Going back to our `mpu_sensor_init()` function, let us add a new function called `app_mpu_config()`, and call it from `mpu_sensor_init()`. Make it return an int, and either check that return value (should be 0) in `mpu_sensor_init()`, or make `mpu_sensor_init()` return that value, so that it can be checked from main.c.
+
+</br> 
+We are about to send our first TWI message. We want to reset the MPU after we start up our application. To do so, we look up the different registers in the [datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf). If you look on page 8, you can see that there is a register called `SIGNAL_PATH_RESET`. This is described in more detail on page 37. We see that the 3 least significant bits reset the gyro, accellerometer and temperature sensor. We want to reset all of them, so the value that we want to send to this register is 0b00000111 (binary) = 0x07 (hexadecimal).
+Try to find the macro/definition of this register in mpu6050_registers.h, and use the function app_mpu_write_single_register() to write 0x07 to that register. This function is blocking, meaning it will not return before the transmission is complete. Check whether the message was successfully sent or timed out by examining the return value from `app_mpu_write_single_register()`.
+
+</br>
+If you succeeded, we also want to write a value to the register called PWR_MGMT_1 (look it up on page 8 in the datasheet). See if you can find the page where this register is described in more detail, and make sure that this register is configured to use the "PLL with X axis gyroscope reference".
+Remember to check whether this message/transfer is ACKed successfully or if it times out.
+
+</br>
+Lastly we need to send some configurations. We want to write something to the registers SMPLRT_DIV, CONFIG, GYRO_CONFIG and ACCEL_CONFIG. It is a lot, but let us start by creating some structs to simplify things a bit. Add this to your mpu_sensor.h file:
+
+```C
+/* Enum defining Accelerometer's Full Scale range posibillities in Gs. */
+enum accel_range {
+  AFS_2G = 0,       // 2 G
+  AFS_4G,           // 4 G
+  AFS_8G,           // 8 G
+  AFS_16G           // 16 G
+};
+
+/* Enum defining Gyroscope's Full Scale range posibillities in Degrees Pr Second. */
+enum gyro_range {
+  GFS_250DPS = 0,   // 250 deg/s
+  GFS_500DPS,       // 500 deg/s
+  GFS_1000DPS,      // 1000 deg/s
+  GFS_2000DPS       // 2000 deg/s
+};
+
+
+
+/* MPU driver digital low pass fileter and external Frame Synchronization (FSYNC) pin sampling configuration structure */
+typedef struct
+{
+    uint8_t dlpf_cfg     :3; // 3-bit unsigned value. Configures the Digital Low Pass Filter setting.
+    uint8_t ext_sync_set :3; // 3-bit unsigned value. Configures the external Frame Synchronization (FSYNC) pin sampling.
+    uint8_t              :2;
+}sync_dlpf_config_t;
+
+/* MPU driver gyro configuration structure. */
+typedef struct
+{
+
+    uint8_t                 :3;
+    uint8_t fs_sel          :2; // FS_SEL 2-bit unsigned value. Selects the full scale range of gyroscopes.
+    uint8_t                 :3;
+}gyro_config_t;
+
+/* MPU driver accelerometer configuration structure. */
+typedef struct
+{
+    uint8_t                 :3;
+    uint8_t afs_sel         :2; // 2-bit unsigned value. Selects the full scale range of accelerometers.
+    uint8_t za_st           :1; // When set to 1, the Z- Axis accelerometer performs self test.
+    uint8_t ya_st           :1; // When set to 1, the Y- Axis accelerometer performs self test.
+    uint8_t xa_st           :1; // When set to 1, the X- Axis accelerometer performs self test.
+}accel_config_t;
+
+/* MPU driver general configuration structure. */
+typedef struct
+{
+    uint8_t             smplrt_div;         // Divider from the gyroscope output rate used to generate the Sample Rate for the MPU-9150. Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
+    sync_dlpf_config_t  sync_dlpf_config;   // Digital low pass fileter and external Frame Synchronization (FSYNC) configuration structure
+    gyro_config_t       gyro_config;        // Gyro configuration structure
+    accel_config_t      accel_config;       // Accelerometer configuration structure
+}app_mpu_config_t;
+```
+
+It looks messy, but what we are doing is that we add app_mpu_config_t as a parameter. This has other members, such as the sync_dlpf_gonfig, gyro_config and accel_config. All the numbers behind the name of the parameters (in gyro_config and accel_config) are used to set these parameters to specific bits. Note that they always add up to 8 bits = one byte.
+In addition, we created some enums, which are used to give names to some of the configurations, e.g. so that we can use the name AFS_2G instead of 0. If you look at the respective register descriptions in the datasheet, you can see what the different bits and enums represent.
+
+After adding these, you can add the following to our app_mpu_config.
+
+```C
+    app_mpu_config_t mpu_config = {
+        .smplrt_div                     = 19,             \
+        .sync_dlpf_config.dlpf_cfg      = 1,              \
+        .sync_dlpf_config.ext_sync_set  = 0,              \
+        .gyro_config.fs_sel             = GFS_2000DPS,    \
+        .accel_config.afs_sel           = AFS_2G,         \
+        .accel_config.za_st             = 0,              \
+        .accel_config.ya_st             = 0,              \
+        .accel_config.xa_st             = 0,              \
+    };
+```
+
+Lastly, use the mpu_config and the app_mpu_write_registers() function to write our configuration to the MPU:
+
+```C
+    // This belongs in the end of app_mpu_config().
+
+    uint8_t *data;
+    data = (uint8_t*)&mpu_config; // Casting to a normal uint8_t so that app_mpu_write_register will accept it as an input parameter.
+    
+    err = app_mpu_write_registers(MPU_REG_SMPLRT_DIV, data, 4);
+    return err;
+```
+
+Congratulations! You are done setting up your MPU. Now all that remains is to read out the sensor data at will.
+
+We are about to implement a function that can be called from `main.c` (or whatever file that includes `mpu_sensor.h`). Therefore we need to declare it in `mpu_sensor.h`, so that the compiler knows that it exists outside `mpu_sensor.c`.
+Declare and implement empty functions (that returns 0) in `mpu_sensor.h` and `mpu_sensor.c`. Call them `read_accel_values()` and `read_gyro_values()`.
+
+</br>
+We will leave `read_gyro_values()` empty for now, but we will implement `read_accel_values()`. This is a function that we want to use to read out three values, the accellerometer values for the X, Y and Z axis. This means that we can't return it as a single value at the end of the function. The way we usually do this in C is that we take an input parameter holding the X Y and Z values. Let us start by adding a struct in `mpu_sensor.h` called `accel_values_t` that holds an X, Y and a Z parameter. Looking at the datasheet for our sensor again, we see that the registers we want to read out are:
+</br>
+ACCEL_XOUT_H
+</br>
+ACCEL_XOUT_L
+</br>
+ACCEL_YOUT_H
+</br>
+ACCEL_YOUT_L
+</br>
+ACCEL_ZOUT_H
+</br>
+ACCEL_ZOUT_L
+</br>
+
+Each of these are one byte = 8 bits, meaning that we will read out 16 bits for each axis. Hence, we will make our X, Y and Z parameters `uint16_t` parameters. We will add the same for gyro_values_t while we are at it. Add this to `mpu_sensor.h`:
+
+```C
+/* Structure to hold acceleromter values.
+ * All values are unsigned 16 bit integers
+*/
+typedef struct
+{
+    int16_t x;
+    int16_t y;
+    int16_t z;
+}accel_values_t;
+
+
+/*Structure to hold gyroscope values. 
+ * All values are unsigned 16 bit integers
+*/
+typedef struct
+{
+    int16_t x;
+    int16_t y;
+    int16_t z;
+}gyro_values_t;
+```
+
+And finally for our read_accel_values() function, we want to take `accel_values_t * p_accel_values` as an input parameter. (remember to also add that to the declaration in `mpu_sensor.h`). Let us use app_mpu_read_registers() to read out the 6 registers that makes up the accellerometer values in X, Y and Z:
+
+```C
+int read_accel_values(accel_values_t * p_accel_values)
+{
+    int err;
+    uint8_t raw_values[6];
+    err = app_mpu_read_registers(MPU_REG_ACCEL_XOUT_H, raw_values, 6);
+    /** The data will come back bytewise in the following order (see registers from mpu6050.h) :        *
+      * raw_values[0] = MPU_REG_ACCEL_XOUT_H     ACCEL_XOUT[15:8]                                       *
+      * raw_values[1] = MPU_REG_ACCEL_XOUT_L     ACCEL_XOUT[ 7:0]                                       *
+      * raw_values[2] = MPU_REG_ACCEL_YOUT_H     ACCEL_YOUT[15:8]                                       *
+      * raw_values[3] = MPU_REG_ACCEL_YOUT_L     ACCEL_YOUT[ 7:0]                                       *
+      * raw_values[4] = MPU_REG_ACCEL_ZOUT_H     ACCEL_ZOUT[15:8]                                       *
+      * raw_values[5] = MPU_REG_ACCEL_ZOUT_L     ACCEL_ZOUT[ 7:0]                                       **/
+    if (err) {
+        LOG_ERR("Could not read accellerometer data. err: %d", err);
+        return err;
+    }
+    return 0;
+}
+```
+
+As long as err == 0, we have successfully read out the parameters. Let us populate them into the p_accel_values:
+
+```C
+    [...]
+    p_accel_values->x = ((raw_values[0]<<8) + raw_values[1]);
+    p_accel_values->y = ((raw_values[2]<<8) + raw_values[3]);
+    p_accel_values->z = ((raw_values[4]<<8) + raw_values[5]);
+    return 0;
+}
+```
+
+Please note the bitshifting used to combine two bytes (uint8_t) into one uint16_t.
+
+Finally, let us add this to our main() loop. Go to main.c, and create a parameter of type accel_values_t near the top of your `main()` function. Lastly, your main-loop should have a call to k_sleep() which is set to sleep for 1 second. If you add the `read_accel_values()` right before (or after) that sleep, it will read out the accellerometer values every second:
+
+```C
+    // This belongs to your main-loop.
+        dk_set_led(RUN_STATUS_LED, (blink_status++)%2);
+        if (read_accel_values(&accel_values) == 0) {
+            LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
+        }
+        k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
+```
+
+Note that we only print the accelleration values if `read_accel_values()` returns 0. Do you see the accellerometer values in your log?
 
 
 
