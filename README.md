@@ -579,6 +579,7 @@ int app_mpu_read_registers(uint8_t reg, uint8_t * p_data, uint8_t length)
 Explanation of functions:
 
 </br>
+
 **app_mpu_tx():** will send `length` bytes of data to the device with the `address`. The data it sends is stored in `p_data`.
 </br>
 **app_mpu_rx():** will read `length` bytes of data from the device with the `address`. The data is stored in `p_data`.
