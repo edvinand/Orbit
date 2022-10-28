@@ -291,7 +291,8 @@ Now try to create a function called `mpu_sensor_init()` in your `mpu_sensor.c` f
 
 </br>
 </br>
-Congratulations. You have successfully created your first function in a different file. Now, let us start reading some sensor data. As I mentioned, the MPU6050 sensor uses I2C for communication. The first thing we want to do is to add I2C to our project. To do this, add the following snippet to your prj.conf file:
+Congratulations. You have successfully written your first function in a different .c file. Now, let us start reading some sensor data. As I mentioned, the MPU6050 sensor uses I2C for communication. The first thing we want to do is to add I2C to our project. To do this, add the following snippet to your prj.conf file:
+
 ```C
 # I2C
 CONFIG_NRFX_TWIM0=y
