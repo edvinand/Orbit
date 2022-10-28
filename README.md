@@ -579,7 +579,6 @@ int app_mpu_read_registers(uint8_t reg, uint8_t * p_data, uint8_t length)
 Explanation of functions:
 
 </br>
-
 **app_mpu_tx():** will send `length` bytes of data to the device with the `address`. The data it sends is stored in `p_data`.
 </br>
 **app_mpu_rx():** will read `length` bytes of data from the device with the `address`. The data is stored in `p_data`.
@@ -592,7 +591,9 @@ Explanation of functions:
 </br>
 **app_mpu_read_registers():** will read `length` bytes starting from the register `reg`.
 </br>
+
 In addition, we added some parameters and definitions at the top:
+<br>
 **MPU_TWI_BUFFER_SIZE:** the maximum number of bytes we can use in a transfer. The size is selected so that it will be possible to read the accellerometer (6 bytes), gyroscope (6 bytes) and temperature (2 bytes) in one transmission.
 </br>
 **MPU_TWI_TIMEOUT:** the number of iterations we will wait for the TWI transfer to complete before we time out.
