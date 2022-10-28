@@ -342,14 +342,105 @@ int twi_init(void)
     
 } 
 ```
-What we are doing here is that we are telling the 
+
+What we are doing here is that we are telling the application that we want to connect the I2C0 interrupts to our nrfx_twim_0_irq_handler. This callback handler is implemented inside the nrfx i2c driver (found in nrfx_twim.c). We don't need to use this handler directly. We will set up our own handler shortly.
+Next, we need to configure our I2C to use the pins that we want to use, and the speed that we want to use, in addition to setting our own interrupt handler.
+If you open `nrfx_twim.c` (<ctrl> + <shift> + <P> and write nrfx_twim.c and hit enter), you should see a function called `nrfx_twim_init()`in there. We want to use this to initialize our TWI. If you look up the same function in nrfx_twim.h, you can see what input parameters it requires, with some description above.
+
+```C
+nrfx_err_t nrfx_twim_init(nrfx_twim_t const *        p_instance,
+                          nrfx_twim_config_t const * p_config,
+                          nrfx_twim_evt_handler_t    event_handler,
+                          void *                     p_context);
+```
+
+So we need to create most of these.
+`p_instance` is a pointer to the i2c0 instance, which we can create by adding this line close to the top of your `mpu_sensor.c`:
+
+```C
+const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
+```
+
+Then we need to create our config parameter. We can do it like this (inside our `twi_init()` function) :
+```C
+    const nrfx_twim_config_t twim_config = {                          \
+        .scl                = 4,                                      \
+        .sda                = 3,                                      \
+        .frequency          = NRF_TWIM_FREQ_400K,                     \
+        .interrupt_priority = NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY,  \
+        .hold_bus_uninit    = false,                                  \
+    };
+```
+
+In addition we need an `nrfx_twim_evt_handler_t` type event handler. Look at the definition of `nrfx_twim_evt_handler_t` in nrfx_twim.h:
+
+```C
+/** @brief TWI event handler prototype. */
+typedef void (* nrfx_twim_evt_handler_t)(nrfx_twim_evt_t const * p_event,
+                                         void *                  p_context);
+```
+
+What this means is that the callback handler is expected to return nothing (void), and it has two parameters, p_event and p_contect. So create this function in your `mpu_sensor.c` :
+
+```C
+void my_twim_handler(nrfx_twim_evt_t const * p_event, void * p_context)
+{
+    LOG_INF("TWIM callback");
+}
+```
+
+The last parameter, p_context, we will just set to NULL.
+So try calling nrfx_twim_init() with the parameters that we just created as inputs. Remember that if it expects to be an input parameter to be a pointer, you probably need an `&` before you enter it. Also note that my_twim_handler will not have an `&` in front of it. Remember to check the return value from nrfx_twim_init(), and make sure it returns `NRFX_SUCCESS`.
+
+Lastly, after initializing our TWI, we need to enable it. Look for a function in `nrfx_twim.c`/`nrfx_twim.h` that we can use for this, and then call this after `nrfx_twim_init()`
+
+
+If you did succeeded with initializing and enabling your TWIM, your twi_init() function should look something like this:
+
+```C
+
+// Somewhere close to the top of mpu_sensor.c:
+const nrfx_twim_t m_twim_instance       = NRFX_TWIM_INSTANCE(0);
+[...]
+
+
+int twi_init(void)
+{
+    // Setup peripheral interrupt.
+    IRQ_CONNECT(DT_IRQN(DT_NODELABEL(i2c0)),DT_IRQ(DT_NODELABEL(i2c0), priority), nrfx_isr, nrfx_twim_0_irq_handler,0);
+    irq_enable(DT_IRQN(DT_NODELABEL(i2c0)));
+
+    int err = 0;
+
+    const nrfx_twim_config_t twim_config = {                          \
+        .scl                = 4,                                      \
+        .sda                = 3,                                      \
+        .frequency          = NRF_TWIM_FREQ_400K,                     \
+        .interrupt_priority = NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY,  \
+        .hold_bus_uninit    = false,                                  \
+    };
+    err = nrfx_twim_init(&m_twim_instance,
+                          &twim_config,
+                          my_twim_handler,
+                          NULL);
+                          
+    if (err != NRFX_SUCCESS) {
+        LOG_ERR("twim_init failed. (err %x)", err);
+        return err;
+    }
+
+    nrfx_twim_enable(&m_twim_instance);
+    
+    return 0;
+}
+```
 
 Please note that NRFX_SUCCESS is not equal to 0, which is why we set err back to 0 after checking whether it returned NRFX_SUCCESS.
 </br>
 </br>
 Now we have initialized and enabled our I2C, and we are ready to start communicating with our MPU. But before we do that, we need to know what data to send to our MPU, and how to interpret the data coming back. I2C slaves will always wait for a message from the I2C master, and then it will reply according to that message. 
 
-
+Now is the time to open up the datasheet to our sensor again. [(link)](https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
 
 ### Step 4 - Motor control
 Time to add some movement to our PWM motor. The motor that we used is the Tower Pro SG90. You can find a very simplified datasheet [here](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf). For some background information on how PWM motors work, you can check out [this guide](https://www.jameco.com/Jameco/workshop/Howitworks/how-servo-motors-work.html).
