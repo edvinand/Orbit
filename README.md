@@ -594,7 +594,7 @@ Explanation of functions:
 </br>
 
 In addition, we added some parameters and definitions at the top:
-<br>
+</br>
 **MPU_TWI_BUFFER_SIZE:** the maximum number of bytes we can use in a transfer. The size is selected so that it will be possible to read the accellerometer (6 bytes), gyroscope (6 bytes) and temperature (2 bytes) in one transmission.
 </br>
 **MPU_TWI_TIMEOUT:** the number of iterations we will wait for the TWI transfer to complete before we time out.
