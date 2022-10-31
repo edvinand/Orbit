@@ -844,11 +844,11 @@ Note that we only print the accelleration values if `read_accel_values()` return
 
 If you got stuck during this part of the tutorial, here you can check my final copy of the files:
 </br>
-[mpu_sensor.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.c), 
+[mpu_sensor.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.c) 
 </br>
-[mpu_sensor.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.h), and 
+[mpu_sensor.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.h)
 </br>
-[mpu6050_registers.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu6050_registers.h).
+[mpu6050_registers.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu6050_registers.h)
 
 
 ### Step 4 - Motor control
