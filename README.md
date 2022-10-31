@@ -840,7 +840,10 @@ Finally, let us add this to our main() loop. Go to main.c, and create a paramete
 ```
 
 Note that we only print the accelleration values if `read_accel_values()` returns 0. Do you see the accellerometer values in your log?
+</br>
 
+If you got stuck during this part of the tutorial, here you can check my final copy of the [mpu_sensor.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.c), [mpu_sensor.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.h), and [mpu6050_registers.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu6050_registers.h).
+[motor_control.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
 
 
 ### Step 4 - Motor control

@@ -19,7 +19,7 @@ static struct bt_conn *current_conn;
 /* LEDs */
 #define RUN_STATUS_LED DK_LED1
 #define CONN_STATUS_LED DK_LED2
-#define RUN_LED_BLINK_INTERVAL 1000
+#define RUN_LED_BLINK_INTERVAL 250
 
 /* Declarations */
 
