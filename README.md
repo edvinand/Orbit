@@ -32,6 +32,8 @@ The aim of this tutorial is to simply create one service with two characteristic
 # Tutorial Steps
 ### Step 1 - Getting started
 
+**Note:** Most of the screenshots will say that we are using NCS v1.9.0. You should use the latest stable release, which is currently v2.1.1.
+
 If you haven't done it already, start by setting up nRF Connect for Visual Studio code by setting the environment parameters. Under the nRF Connect tab in Visual Studio Code (VSC) click "Open welcome page" and click "Quick Setup". 
 Visual Studio Code settings | 
 ------------ |
