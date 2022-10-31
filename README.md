@@ -849,7 +849,6 @@ If you got stuck during this part of the tutorial, here you can check my final c
 [mpu_sensor.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu_sensor.h), and 
 </br>
 [mpu6050_registers.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot4/mpu6050_registers.h).
-[motor_control.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
 
 
 ### Step 4 - Motor control
