@@ -964,92 +964,142 @@ int motor_init(void)
 
 If you open your nrf52840dk_nrf52840.dts, which is our standard board file, we can see what pwm_led0 looks like by default:
 
-PWM Period and PWM Duty Cycle | 
+pwm_led0 default configuration | 
 ------------ |
 <img src="https://github.com/edvinand/Orbit/blob/main/images/pwm_led0_dts.PNG"> |
 
 
+While it would be possible, we don't want to change anything inside this file, because those changes will stick to all other projects that are using the same board file. This is why we want to do the changes in our overlay file, just like we did with our I2C. Unfortunately, the pin number is not set here directly. It is set in &pwm0 inside pwm_led0. But since the default configuration for pwm_led0 is PWM_POLARITY_INVERTED, and we want to change that as well, we need to add the pwmleds snippet to our overlay file as well. 
+Let us start by adding a pwmleds snippet to our `nrf52840dk_nrf52840.overlay` file. This will overwrite the default settings from the .dts file.
+
 ```C
-// Near the top of motor_control.c:
-#define SERVO_PIN                           29
-#define PWM_PERIOD                          20000
-static nrfx_pwm_t pwm = NRFX_PWM_INSTANCE(1);
+/{
+    pwmleds {
+        compatible = "pwm-leds";
+        pwm_led0: pwm_led_0 {
+            pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+        };
+    };
+};
+```
 
-// implementation of motor_init():
-int motor_init(void)
-{
-    LOG_INF("Initializing Motor Control");
+You can see here that the only change we did was to change the polarity from inverted to normal. This means that the PWM signal will have a high output for the duty cycle, instead of low. If you right click and select "go to definition" on the `&pwm0` in your overlay file, you will see something like this:
 
-    nrfx_err_t err;
-    nrfx_pwm_config_t pwm_config    = NRFX_PWM_DEFAULT_CONFIG(SERVO_PIN, NRFX_PWM_PIN_NOT_USED, NRFX_PWM_PIN_NOT_USED, NRFX_PWM_PIN_NOT_USED);
-    pwm_config.top_value            = PWM_PERIOD;
-    pwm_config.load_mode            = NRF_PWM_LOAD_INDIVIDUAL;
+```C
+&pwm0 {
+	status = "okay";
+	pinctrl-0 = <&pwm0_default>;
+	pinctrl-1 = <&pwm0_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+```
+
+So our pin numbers are set in pwm0_default and pwm0_sleep. Let us start by changing the names of these as we add this to our `overlay` file:
+
+```C
+&pwm0 {
+    status = "okay";
+    pinctrl-0 = <&pwm0_custom>;
+    pinctrl-1 = <&pwm0_csleep>;
+    pinctrl-names = "default", "sleep";
+};
+```
+
+You can call them whatever you like. I used pwm0_custom and pwm0_csleep. The last part we need to do is that we need to define pwm0_custom and pwm0_csleep. Try right clicking the pwm0_default and pwm0_sleep in the .dts file to see hwat they look like by default:
+
+```C
+&pinctrl {
+	pwm0_default: pwm0_default {
+		group1 {
+			psels = <NRF_PSEL(PWM_OUT0, 0, 13)>;
+			nordic,invert;
+		};
+	};
     
-    err = nrfx_pwm_init(&pwm, &pwm_config, NULL, NULL);
-    if (err != NRFX_SUCCESS) {  // NB: NRFX_SUCCESS != 0
-        LOG_ERR("nrfx_pwm_init() failed, err %d", err);
-    }
-    
-    return 0;
-}
-
+	pwm0_sleep: pwm0_sleep {
+		group1 {
+			psels = <NRF_PSEL(PWM_OUT0, 0, 13)>;
+			low-power-enable;
+		};
+	};
+};
 ```
 
-In theory (!) our motor is now operational as soon as you connect it. Connect the brown wire to GND, the red wire to VDD and the orange to the PWM signal pin (P0.03). However, we haven't actually told the PWM driver to set a PWM signal yet. Let us start by adding this to our motor_init() function to test that it works. Look for nrfx_pwm_simple_playback() in nrfx_pwm.h, and see if you can apply it to set the PWM signal of your motor. Remember to call nrfx_pwm_simple_playback before your `return 0;`.
-How to set this frequency is not trivial, since the second parameter is a double pointer to the actual duty cycle, so we will walk through it. If you want to try for yourself, you can stop reading here, and look into the `nrfx_pwm.h` file. 
+Note that I added the `&pinctrl {` and `};` at the top and bottom, since we need this when we copy it into our `.overlay` file. 
 
-<br>
-
-The nrfx_pwm_simple_playback() expects a pointer to a nrf_pwm_sequence_t parameter. It also holds a parameter indicating the length of this array. This is all we will use, and we will set the rest to 0. The array with the PWM values is a parameter with the type nrf_pwm_sequence_t, so let us start by implementing this near the top of motor_control.c:
+Add this to your `.overlay` file (with the names that you used in `&pwm0`:
 
 ```C
-static  nrf_pwm_values_individual_t position_1[] = {
-    {19000},
-};
-static  nrf_pwm_values_individual_t position_2[] = {
-    {18000},
+&pinctrl {
+    pwm0_custom: pwm0_custom {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 2)>;
+            nordic,invert;
+        };
+    };
+
+    pwm0_csleep: pwm0_csleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 2)>;
+            low-power-enable;
+        };
+    };
 };
 ```
 
-You may remember that our motor's datasheet said that the PWM duty cycle should be between 1ms and 2ms on logic high, and low for the rest of the period. This would be 1000 and 2000 ticks in our case. However, this PWM driver has an active low configuration, so the easiest workaround for this is to just say that the duty cycle is the period minus the actual duty cycle. So for 1ms that would be 20000 - 1000 = 19000. 
+FYI: the `0, 2` is port 0, pin 2. If you wanted to use e.g. pin P1.15, you would set `psels = <NRF_PSEL(PWM_OUT0, 1, 15). 
 
-Then we will implement the nrf_pwm_sequence_t parameter, which uses the nrf_pwm_values_individual_t:
+In the end, your `nrf52840dk_nrf52840.overlay` file should look something like this:
 
 ```C
-static nrf_pwm_sequence_t position_1_sequence = {
-    .values.p_individual    = position_1,
-    .length                 = NRF_PWM_VALUES_LENGTH(position_1),
-    .repeats                = 0,
-    .end_delay              = 0
+&i2c0 {
+    status = "okay";
+    compatible = "nordic,nrf-twim";
+    clock-frequency = < I2C_BITRATE_STANDARD >;
 };
-static nrf_pwm_sequence_t position_2_sequence = {
-    .values.p_individual    = position_2,
-    .length                 = NRF_PWM_VALUES_LENGTH(position_2),
-    .repeats                = 0,
-    .end_delay              = 0
+
+&pinctrl {
+    pwm0_custom: pwm0_custom {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 2)>;
+            nordic,invert;
+        };
+    };
+
+    pwm0_csleep: pwm0_csleep {
+        group1 {
+            psels = <NRF_PSEL(PWM_OUT0, 0, 2)>;
+            low-power-enable;
+        };
+    };
+};
+
+&pwm0 {
+    status = "okay";
+    pinctrl-0 = <&pwm0_custom>;
+    pinctrl-1 = <&pwm0_csleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+/{
+    pwmleds {
+        compatible = "pwm-leds";
+        pwm_led0: pwm_led_0 {
+            pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
+        };
+    };
 };
 ```
 
-Now we can finally use these "sequences" to set the angle of our motor by adding this line to our `motor_init()`:
-```C
-nrfx_pwm_simple_playback(&pwm, &position_1_sequence, 50, NRFX_PWM_FLAG_STOP);
-```
+Before we connect the servo, you can try to short P0.02 with P0.14 (LED2) on your DK, and see if it outputs a PWM signal. Note that since we set the PWM polarity to normal instead of inverted, the LED will be a lot brighter (92.5% instead of 7.5%). 
 
-This will cause the motor to go to "position 1", and stay there for 50 PWM periods (1 second), and then turn off. 
+Try to connect the servo motor. It has three wires. One brown, which you can connect to GND. Then you have one Orange, which you can connect to VDD (not VDDH), and then connect the yellow wire to whatever pin you chose for your PWM pin (probably P0.02). 
+Does the motor move?
 
-**Challenge:**
-<br>
-Use what you now know to make two of the buttons in the button handler from main.c control the motor between "position_1" and "position_2"
+If it does, you can try to create a function inside motor_control.c that you can call from e.g. the button handler to set the pwm signal to different values between 1ms and 2ms. These motors are cheap, so some motors goes 180 degrees between 1ms and 2ms, while some uses the range from 0.9ms to 1.2ms. Try out different values to see what the limits are for your motor. 
+Call the function `set_motor_angle()` and make it return an int (0 on success, negative value on error). Declare it in motor_control.h, and implement it in motor_control.c. make it have an input parameter either as a PWM duty cycle, or an input angle (degrees between 0 and 180).
 
-<br>
-
-*Hint: If you are stuck, you can see a suggested solution for main.c, and motor_control.c/h here:
-
-<br>
-
-[main.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot0/main.c)</br>
-[motor_control.c](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.c)</br>
-[motor_control.h](https://github.com/edvinand/Orbit/blob/main/temp_files/snapshot1/custom_files/motor_control.h)</br>
+Use this to set different angles, depending on what button you pressed. 
 
 ### Step 5 - Adding Bluetooth
 It is finally time to add bluetooth to our project. A hint was given in the project name, but in case you missed it, we will write an application that mimics some sort of bluetooth remote, where we will be able to send button presses to a connected Bluetooth Low Energy Central. We will also add the oppurtynity to write back to the remote control. That may not be a typical feature for a remote control, but for the purpose of learning how to communicate in both directions we will add this. The connected central can either be your phone, a computer, or another nRF52. For this guide we will use a separate DK and nRF Connect for Desktop -> Bluetooth, but if you only have one DK, you can use [nRF Connect for iOS or Android.](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile)
@@ -1062,6 +1112,7 @@ Because we want to keep our main.c clean, we will try to do most of the bluetoot
 
 target_sources(app PRIVATE
     src/custom_files/motor_control.c;
+    src/custom_files/mpu_sensor.c;
     src/custom_files/remote.c
 )
 

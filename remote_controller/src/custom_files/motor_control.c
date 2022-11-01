@@ -16,9 +16,20 @@ int motor_init(void)
     return -EBUSY;
 	}
 
-    err = pwm_set_dt(&pwm_led0, 20000, 1500);
+    err = pwm_set_dt(&pwm_led0, 20000, 1000);
     if (err) {
         LOG_ERR("pwm_set_dt returned %d", err);
+    }
+
+    return err;
+}
+
+int set_motor_angle(uint16_t duty_cycle_ns)
+{
+    int err;
+    err = pwm_set_dt(&pwm_led0, 20000, duty_cycle_ns);
+    if (err) {
+        LOG_ERR("pwm_set_dt_returned %d", err);
     }
 
     return err;

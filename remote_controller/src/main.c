@@ -89,7 +89,7 @@ void on_disconnected(struct bt_conn *conn, uint8_t reason)
 
 void button_handler(uint32_t button_state, uint32_t has_changed)
 {
-    // int err;
+    int err = 0;
 	int button_pressed = 0;
 	if (has_changed & button_state)
 	{
@@ -97,22 +97,27 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 		{
 			case DK_BTN1_MSK:
 				button_pressed = 1;
-                // set_motor_angle(1);
+                err = set_motor_angle(1000);
 				break;
 			case DK_BTN2_MSK:
 				button_pressed = 2;
-                // set_motor_angle(2);
+                err = set_motor_angle(1333);
 				break;
 			case DK_BTN3_MSK:
-				button_pressed = 3;
+                button_pressed = 3;
+				err = set_motor_angle(1666);
 				break;
 			case DK_BTN4_MSK:
-				button_pressed = 4;
+                button_pressed = 4;
+				err = set_motor_angle(2000);
 				break;
 			default:
 				break;
 		}
         LOG_INF("Button %d pressed.", button_pressed);
+        if (err) {
+            LOG_ERR("couldn't set duty cycle. Err %d", err);
+        }
         // set_button_press(button_pressed); 
         // err = send_button_notification(current_conn, button_pressed);
         // if (err) {
@@ -146,10 +151,10 @@ void main(void)
 
     configure_dk_buttons_and_leds();
 
-    err = mpu_sensor_init();
-    if (err) {
-        LOG_ERR("mpu_init() failed. (err %08x)", err);
-    }
+    // err = mpu_sensor_init();
+    // if (err) {
+    //     LOG_ERR("mpu_init() failed. (err %08x)", err);
+    // }
 
     err = motor_init();
     if (err) {
@@ -165,9 +170,9 @@ void main(void)
 
     for (;;) {
         dk_set_led(RUN_STATUS_LED, (blink_status++)%2);
-        if (read_accel_values(&accel_values) == 0) {
-            LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
-        }
+        // if (read_accel_values(&accel_values) == 0) {
+        //     LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
+        // }
         k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
     }
 }
