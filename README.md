@@ -889,26 +889,48 @@ Just like we did in the `mpu_sensor` files, create a function called `motor_init
 
 
 **PWM control**
-When we are using the nRF Connect SDK, we have several driver options to control the PWM. We have our own drivers that are tailored for the Nordic Semiconductor devices, or we can use Zephyr's drivers, which will use Nordic's drivers beneath the hood. In this tutorial we will use Nordic's drivers directly, for simplicity. 
+When we are using the nRF Connect SDK, we have several driver options to control the PWM. We have our own drivers that are tailored for the Nordic Semiconductor devices, or we can use Zephyr's drivers, which will use Nordic's drivers "underneath the hood". For the PWM we will use the Zephyr drivers. 
 Let us start by adding some configurations to our prj.conf file:
 
 ```C
 # PWM
 CONFIG_PWM=y
-CONFIG_NRFX_PWM1=y
+CONFIG_PWM_LOG_LEVEL_DBG=y
 ```
 
 What we are doig here is that we enable the PWM in general, and we tell it to use PWM instance 1.
 Then we can continue by adding the pwm header file near the top of `motor_control.h`. `motor_control.c` will inherit this, as long as it includes `motor_control.h`.
 
 ```C
-#include "nrfx_pwm.h"
+#include <zephyr/drivers/pwm.h>
 ```
 
-Open `nrfx_pwm.h` and see if you can find a function that will initialize the PWM driver. `nrfx_err_t nrfx_pwm_init(...)` looks promising. This function has 4 parameters. We only need the first two. The rest we can set to NULL, as we don't need any callbacks or context pointer to pass on to the callback. 
-The first parameter is the pointer to an instance. We can use the macro *NRFX_PWM_INSTANCE()* (from nrfx_pwm.h) to define this instance. The second parameter is the configuration that we want to use. The configuration holds information such as the pin number, the PWM frequency, and so on. We can use another macro, *NRFX_PWM_DEFAULT_CONFIG* to set most things, and then we can tweak it later. 
+The beauty of Zephyr drivers is that once we have enabled them through configurations in our prj.conf file, it will automagically be enabled and ready for use. All we need to do is to specify what instance we want to use. Therefore, close to the top of motor_control.c, add this line:
+```C
+static const struct pwm_dt_spec pwm_led0 = PWM_DT_SPEC_GET(DT_ALIAS(pwm_led0));
+```
+
+It doesn't need to be inside a function. This is just a declaration of a variable.
+You can see here that this uses a variable called `pwm_led0`. This is the LED1 on our DK. We would want to change this later, but for now, we will keep LED1 as our PWM pin, just to see that it is working. This line will find our pwm_leds instance, and use LED1 as the default PWM pin. FYI: You can see on the backside of the nRF52840 DK that the LED1 pin is P0.13, so toggling the LED will also toggle that GPIO on the GPIO header on the DK.
+
+</br>
+next we want to check that our PWM channel is ready when this part of the code is reached. Add these lines to our `motor_init()` function:
+
+```C
+    if (!device_is_ready(pwm_led0.dev)) {
+    LOG_ERR("Error: PWM device %s is not ready",
+            pwm_led0.dev->name);
+    return -EBUSY;
+	}
+```
 
 <br>
+
+**Short background:** The way that PWM works is that it is a counter counting from 0 up to a `PWM period`. It starts with the PWM pin being high, and when it reaches a certain value called the `PWM duty cycle` the PWM signal will go low. When the counter reaches PWM period, the PWM pin will reset to high. See the figure from our servo motor specification:
+
+Scan uisng nRF Connect for Mobile | 
+------------ |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/PWM_figure.PNG" width="300"> |
 
 Short background: The way that the PWM works is that it is a counter counting from 0 to .top_value at the speed of 1MHz. 
 When it reaches our threshold/pwm_duty_cycle (which we will set later) it will set the pin in active state, and when the counter's .top_value is reached, it puts the pin in inactive state, and resets the counter. 

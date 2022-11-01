@@ -19,7 +19,7 @@ static struct bt_conn *current_conn;
 /* LEDs */
 #define RUN_STATUS_LED DK_LED1
 #define CONN_STATUS_LED DK_LED2
-#define RUN_LED_BLINK_INTERVAL 250
+#define RUN_LED_BLINK_INTERVAL 1000
 
 /* Declarations */
 
@@ -51,10 +51,10 @@ void on_data_received(struct bt_conn *conn, const uint8_t *const data, uint16_t 
     LOG_INF("Data: %s", temp_str);
 
     if (data[0] == 0x00) {
-        set_motor_angle(1);
+        // set_motor_angle(1);
     }
     else if (data[0] == 0x01) {
-        set_motor_angle(2);
+        // set_motor_angle(2);
     }
 }
 
@@ -97,11 +97,11 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 		{
 			case DK_BTN1_MSK:
 				button_pressed = 1;
-                set_motor_angle(1);
+                // set_motor_angle(1);
 				break;
 			case DK_BTN2_MSK:
 				button_pressed = 2;
-                set_motor_angle(2);
+                // set_motor_angle(2);
 				break;
 			case DK_BTN3_MSK:
 				button_pressed = 3;
