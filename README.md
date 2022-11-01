@@ -932,6 +932,10 @@ PWM Period and PWM Duty Cycle |
 ------------ |
 <img src="https://github.com/edvinand/Orbit/blob/main/images/PWM_figure.PNG" width="300"> |
 
+Before we connect our motor, let us try to generate a PWM signal using our LED. You can give this a go without looking at the solution below. Open pwm.h (ctrl + p, and search for pwm.h), and look at the description for pwm_set_dt(). Looking at our servo motor's [data sheet](http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf), we see that we should have a period of 20ms, and a duty cycle between 1 and 2 ms. Try to set a PWM signal of 1.5ms, with a period of 20ms. 
+
+*Hint: the `spec` parameter is our pwm_led0. Since it requires a pointer, you need to use `&pwm_led0` when you use it in pwm_set_dt().*
+
 Short background: The way that the PWM works is that it is a counter counting from 0 to .top_value at the speed of 1MHz. 
 When it reaches our threshold/pwm_duty_cycle (which we will set later) it will set the pin in active state, and when the counter's .top_value is reached, it puts the pin in inactive state, and resets the counter. 
 <br>
