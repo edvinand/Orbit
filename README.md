@@ -937,14 +937,36 @@ PWM Period and PWM Duty Cycle |
 
 *Hint: the `spec` parameter is our pwm_led0. Since it requires a pointer, you need to use `&pwm_led0` when you use it in pwm_set_dt().*
 
-Short background: The way that the PWM works is that it is a counter counting from 0 to .top_value at the speed of 1MHz. 
-When it reaches our threshold/pwm_duty_cycle (which we will set later) it will set the pin in active state, and when the counter's .top_value is reached, it puts the pin in inactive state, and resets the counter. 
-<br>
-If you study the configuration in *NRFX_PWM_DEFAULT_CONFIG* in nrfx_pwm.h, we see that most of these are ok. What we need to adjust a few things. The PWM period that we want to use is 20ms = 20000µs. Since our PWM clock is running at 1MHz (from *NRFX_PWM_DEFAULT_CONFIG*), we want to set our config's .top_value = 20000. 
-We also want to set the parameter .load_mode. I will not go into details, but it has to do with how many bits in a pwm value that is used. The last thing we want to decide is what GPIO pin that we will use for the PWM signal. 
-If you look at the backside of the DK, you can see that some of the pins are used for LEDs, buttons, NFC, serial communication, etc. Try to avoid these. P0.03 (and close to both GND and VDD), so we can use that. 
+</br>
 
+I will show you how I did it in a second, but if you managed to set the duty cycle of 1.5ms, you should see a faint light on LED1 on your DK. That is good and all, but we originally used LED1 for something else (showing us that the main() loop was running), so ideally we want to use another pin for PWM control. To do this, we need to edit our nrf52840dk_nrf52840.overlay file again. Let us try to move the pin to P0.02, so that we can free up our LED1 for our main loop agian. Before we do so, this is what my `motor_init()` currently looks like:
 
+```C 
+int motor_init(void)
+{
+    int err = 0;
+    LOG_INF("Initializing Motor Control");
+
+    if (!device_is_ready(pwm_led0.dev)) {
+    LOG_ERR("Error: PWM device %s is not ready",
+            pwm_led0.dev->name);
+    return -EBUSY;
+	}
+
+    err = pwm_set_dt(&pwm_led0, 20000, 1500);
+    if (err) {
+        LOG_ERR("pwm_set_dt returned %d", err);
+    }
+
+    return err;
+}
+```
+
+If you open your nrf52840dk_nrf52840.dts, which is our standard board file, we can see what pwm_led0 looks like by default:
+
+PWM Period and PWM Duty Cycle | 
+------------ |
+<img src="https://github.com/edvinand/Orbit/blob/main/images/pwm_led0_dts.PNG"> |
 
 
 ```C
