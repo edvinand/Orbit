@@ -346,7 +346,7 @@ int twi_init(void)
 ```
 
 What we are doing here is that we are telling the application that we want to connect the I2C0 interrupts to our nrfx_twim_0_irq_handler. This callback handler is implemented inside the nrfx i2c driver (found in nrfx_twim.c). We don't need to use this handler directly. We will set up our own handler shortly.
-Next, we need to configure our I2C to use the pins that we want to use, and the speed that we want to use, in addition to setting our own interrupt handler.
+Next, we need to configure our I2C to use the pins that we want to use, and the speed that we want to use, in addition to setting our own interrupt handler. Start by including "nrfx_twim.h" near the top of your mpu_sensor.h file.s
 If you open `nrfx_twim.c` (ctrl + P) and write nrfx_twim.c and hit enter), you should see a function called `nrfx_twim_init()`in there. We want to use this to initialize our TWI. If you look up the same function in nrfx_twim.h, you can see what input parameters it requires, with some description above.
 
 ```C
