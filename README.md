@@ -928,7 +928,7 @@ next we want to check that our PWM channel is ready when this part of the code i
 
 **Short background:** The way that PWM works is that it is a counter counting from 0 up to a `PWM period`. It starts with the PWM pin being high, and when it reaches a certain value called the `PWM duty cycle` the PWM signal will go low. When the counter reaches PWM period, the PWM pin will reset to high. See the figure from our servo motor specification:
 
-Scan uisng nRF Connect for Mobile | 
+PWM Period and PWM Duty Cycle | 
 ------------ |
 <img src="https://github.com/edvinand/Orbit/blob/main/images/PWM_figure.PNG" width="300"> |
 
