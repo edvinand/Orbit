@@ -1093,8 +1093,6 @@ In the end, your `nrf52840dk_nrf52840.overlay` file should look something like t
 };
 ```
 
-Before we connect the servo, you can try to short P0.02 with P0.14 (LED2) on your DK, and see if it outputs a PWM signal. Note that since we set the PWM polarity to normal instead of inverted, the LED will be a lot brighter (92.5% instead of 7.5%). 
-
 Try to connect the servo motor. It has three wires. One brown, which you can connect to GND. Then you have one Orange, which you can connect to VDD (not the one marked 5V), and then connect the yellow wire to whatever pin you chose for your PWM pin (probably P0.02). 
 Does the motor move?
 
