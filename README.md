@@ -1095,10 +1095,10 @@ In the end, your `nrf52840dk_nrf52840.overlay` file should look something like t
 
 Before we connect the servo, you can try to short P0.02 with P0.14 (LED2) on your DK, and see if it outputs a PWM signal. Note that since we set the PWM polarity to normal instead of inverted, the LED will be a lot brighter (92.5% instead of 7.5%). 
 
-Try to connect the servo motor. It has three wires. One brown, which you can connect to GND. Then you have one Orange, which you can connect to VDD (not VDDH), and then connect the yellow wire to whatever pin you chose for your PWM pin (probably P0.02). 
+Try to connect the servo motor. It has three wires. One brown, which you can connect to GND. Then you have one Orange, which you can connect to VDD (not the one marked 5V), and then connect the yellow wire to whatever pin you chose for your PWM pin (probably P0.02). 
 Does the motor move?
 
-If it does, you can try to create a function inside motor_control.c that you can call from e.g. the button handler to set the pwm signal to different values between 1ms and 2ms. These motors are cheap, so some motors goes 180 degrees between 1ms and 2ms, while some uses the range from 0.9ms to 1.2ms. Try out different values to see what the limits are for your motor. 
+If it does, you can try to create a function inside motor_control.c that you can call from e.g. the button handler to set the pwm signal to different values between 1ms and 2ms. These motors are cheap, so some motors goes 180 degrees between 1ms and 2ms, but yout milage may vary. Try out different values to see what the limits are for your motor. When I tested one of the motors, it turned out that the limirs were 4ms and 24ms. 
 Call the function `set_motor_angle()` and make it return an int (0 on success, negative value on error). Declare it in motor_control.h, and implement it in motor_control.c. make it have an input parameter either as a PWM duty cycle, or an input angle (degrees between 0 and 180).
 
 Use this to set different angles, depending on what button you pressed. 
