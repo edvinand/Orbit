@@ -18,7 +18,7 @@ int motor_init(void)
     return -EBUSY;
 	}
 
-    err = pwm_set_dt(&pwm_led0, PWM_PERIOD_NS, 1500000);
+    err = pwm_set_dt(&pwm_led0, PWM_PERIOD_NS, 1400000);
     if (err) {
         LOG_ERR("pwm_set_dt returned %d", err);
     }
