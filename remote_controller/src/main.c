@@ -97,19 +97,19 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 		{
 			case DK_BTN1_MSK:
 				button_pressed = 1;
-                err = set_motor_angle(1000);
+                err = set_motor_angle(1000000);
 				break;
 			case DK_BTN2_MSK:
 				button_pressed = 2;
-                err = set_motor_angle(1333);
+                err = set_motor_angle(1333000);
 				break;
 			case DK_BTN3_MSK:
                 button_pressed = 3;
-				err = set_motor_angle(1666);
+				err = set_motor_angle(1666000);
 				break;
 			case DK_BTN4_MSK:
                 button_pressed = 4;
-				err = set_motor_angle(2000);
+				err = set_motor_angle(2000000);
 				break;
 			default:
 				break;
@@ -151,10 +151,10 @@ void main(void)
 
     configure_dk_buttons_and_leds();
 
-    // err = mpu_sensor_init();
-    // if (err) {
-    //     LOG_ERR("mpu_init() failed. (err %08x)", err);
-    // }
+    err = mpu_sensor_init();
+    if (err) {
+        LOG_ERR("mpu_init() failed. (err %08x)", err);
+    }
 
     err = motor_init();
     if (err) {
@@ -170,9 +170,9 @@ void main(void)
 
     for (;;) {
         dk_set_led(RUN_STATUS_LED, (blink_status++)%2);
-        // if (read_accel_values(&accel_values) == 0) {
-        //     LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
-        // }
+        if (read_accel_values(&accel_values) == 0) {
+            LOG_INF("# %d, Accel: X: %06d, Y: %06d, Z: %06d", blink_status, accel_values.x, accel_values.y, accel_values.z);
+        }
         k_sleep(K_MSEC(RUN_LED_BLINK_INTERVAL));
     }
 }

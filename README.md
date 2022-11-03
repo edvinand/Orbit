@@ -942,6 +942,8 @@ PWM Period and PWM Duty Cycle |
 I will show you how I did it in a second, but if you managed to set the duty cycle of 1.5ms, you should see a faint light on LED1 on your DK. That is good and all, but we originally used LED1 for something else (showing us that the main() loop was running), so ideally we want to use another pin for PWM control. To do this, we need to edit our nrf52840dk_nrf52840.overlay file again. Let us try to move the pin to P0.02, so that we can free up our LED1 for our main loop agian. Before we do so, this is what my `motor_init()` currently looks like:
 
 ```C 
+//define close to top of motor_control.c:
+#define PWM_PERIOD_NS 20000000
 int motor_init(void)
 {
     int err = 0;
@@ -953,7 +955,7 @@ int motor_init(void)
     return -EBUSY;
 	}
 
-    err = pwm_set_dt(&pwm_led0, 20000, 1500);
+    err = pwm_set_dt(&pwm_led0, PWM_PERIOD_NS, 1500000);
     if (err) {
         LOG_ERR("pwm_set_dt returned %d", err);
     }
