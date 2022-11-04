@@ -437,7 +437,7 @@ int twi_init(void)
 }
 ```
 
-Please note that NRFX_SUCCESS is not equal to 0, which is why we return 0 instead of err, after checking whether it returned NRFX_SUCCESS.
+Please note that NRFX_SUCCESS is not equal to 0, which is why we return 0 instead of err, after checking that it returned NRFX_SUCCESS.
 </br>
 </br>
 Now we have initialized and enabled our I2C, and we are ready to start communicating with our MPU. But before we do that, we need to know what data to send to our MPU, and how to interpret the data coming back. I2C slaves will always wait for a message from the I2C master, and then it will reply according to that message. 
