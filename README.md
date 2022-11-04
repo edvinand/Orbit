@@ -217,7 +217,7 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 }
 
 /* Configurations */
-static void configure_dk_buttons_leds(void)
+static void configure_dk_buttons_and_leds(void)
 {
     int err;
     err = dk_leds_init();
@@ -236,7 +236,7 @@ void main(void)
     int blink_status = 0;
 	LOG_INF("Hello World! %s\n", CONFIG_BOARD);
 
-    configure_dk_buttons_leds();
+    configure_dk_buttons_and_leds();
 
     LOG_INF("Running...");
     for (;;) {
