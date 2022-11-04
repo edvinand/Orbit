@@ -140,10 +140,3 @@ int bluetooth_init(struct bt_conn_cb * bt_cb, struct bt_remote_service_cb * remo
 
     return err;
 }
-
-
-int set_kahoot_choice(int option)
-{
-    LOG_INF("Setting option");
-    return 0;
-}
