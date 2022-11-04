@@ -119,7 +119,6 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 			case DK_BTN4_MSK:
 				button_pressed = 4;
                 answer = 'D';
-                temp_char++;
                 current_ans = 4;
 				break;
 			default:
