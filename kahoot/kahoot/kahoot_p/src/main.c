@@ -16,7 +16,6 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
 static struct bt_conn *current_conn;
 volatile uint8_t current_ans = 0;
-volatile uint8_t temp_char = 'A';
 
 /* LEDs */
 #define RUN_STATUS_LED DK_LED1
@@ -97,7 +96,6 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 {
     int err = 0;
     uint8_t answer = 0;
-    uint8_t my_name[4] = MY_NAME;
 	int button_pressed = 0;
 	if (has_changed & button_state)
 	{
@@ -129,10 +127,6 @@ void button_handler(uint32_t button_state, uint32_t has_changed)
 		}
         LOG_INF("Button %d pressed.", button_pressed);
         if (answer != 0) {
-            if (answer == 'D') {
-                my_name[3] = temp_char;
-                set_adv_name(my_name, 4);
-            }
             bt_le_adv_stop();
             err = simple_ad_start(answer);
         }
